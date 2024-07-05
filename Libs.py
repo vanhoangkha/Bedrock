@@ -105,9 +105,9 @@ def suggest_writing_document(input_text):
     \n\nAssistant: """
     return call_claude_sonet_stream(prompt)
 
-def search(question):
+def search(question, callback):
     retriever = AmazonKnowledgeBasesRetriever(
-        knowledge_base_id="JAHBTIXPHK",
+        knowledge_base_id="EWVHJIY9AS",
         retrieval_config={"vectorSearchConfiguration": 
                           {"numberOfResults": 3,
                            'overrideSearchType': "SEMANTIC", # optional
@@ -138,7 +138,8 @@ def search(question):
         model_id="anthropic.claude-3-sonnet-20240229-v1:0",  # Updated model ID
         client=bedrock_client,
         model_kwargs=model_kwargs_claude,
-        streaming=True
+        streaming=True,
+        callbacks=[callback]
     )
 
     prompt = ChatPromptTemplate.from_messages(
