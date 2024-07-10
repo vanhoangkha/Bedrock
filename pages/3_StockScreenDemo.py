@@ -77,7 +77,7 @@ if(infoType == 'Fundam'):
     st.markdown('** Exchange **: ' + info['exchange'])
     st.markdown('** Quote Type **: ' + info['quoteType'])
     
-    start = dt.datetime.today()-dt.timedelta(2 * 365)
+    start = dt.datetime.today()-dt.timedelta(365)
     end = dt.datetime.today()
     df = yf.download(ticker,start,end)
     df = df.reset_index()
@@ -129,8 +129,8 @@ else:
     def calcBollinger(data, size):
         df = data.copy()
         df["sma"] = df['Adj Close'].rolling(size).mean()
-        df["bolu"] = df["sma"] + 2*df['Adj Close'].rolling(size).std(ddof=0) 
-        df["bold"] = df["sma"] - 2*df['Adj Close'].rolling(size).std(ddof=0) 
+        df["bolu"] = df["sma"] + df['Adj Close'].rolling(size).std(ddof=0) 
+        df["bold"] = df["sma"] - df['Adj Close'].rolling(size).std(ddof=0) 
         df["width"] = df["bolu"] - df["bold"]
         df.dropna(inplace=True)
         return df
@@ -191,7 +191,7 @@ else:
     
     st.plotly_chart(figMA, use_container_width=True)  
     df_ma_file = df_ma.to_csv().encode('utf-8')
-    print(df_ma_file)
+    #print(df_ma_file)
     st.subheader('Moving Average Convergence Divergence (MACD)')
     numYearMACD = st.number_input('Insert period (Year): ', min_value=1, max_value=10, value=2, key=2) 
     
@@ -387,18 +387,18 @@ def forecast_price(question, docs):
 st.title('Forecast')
 st.write("---")
 st.subheader('Dự đoán với chỉ số MACD')
-response = forecast_price(question="Dựa vào các chỉ số trên phân tích giá chứng khoán trong thời gian tới", docs = df_macd)
+response = forecast_price(question="Dựa vào các chỉ số trên đưa ra phân tích giá chứng khoán trong thời gian tới,thời điểm, đưa ra giá mua vào và bán ra cổ phiếu cụ thể, giá cổ phiếu là VND", docs = df_macd)
 st.write(df_macd)
 st.write_stream(response)
 
 st.write("---")
 st.subheader('Dự đoán với chỉ số BOLL')
-response = forecast_price(question="Dựa vào các chỉ số trên phân tích giá chứng khoán trong thời gian tới", docs = df_boll)
+response = forecast_price(question="Dựa vào các chỉ số trên phân tích giá chứng khoán trong thời gian tới,thời điểm, đưa ra giá mua vào và bán ra cổ phiếu cụ thể, giá cổ phiếu là VND", docs = df_boll)
 st.write(df_boll)
 st.write_stream(response)
 
 st.write("---")
 st.subheader('Dự đoán với chỉ số EMA')
-response = forecast_price(question="Dựa vào các chỉ số trên phân tích giá chứng khoán trong thời gian tới", docs = df_ma)
+response = forecast_price(question="Dựa vào các chỉ số trên phân tích giá chứng khoán trong thời gian tới,thời điểm, đưa ra giá mua vào và bán ra cổ phiếu cụ thể, giá cổ phiếu là VND", docs = df_ma)
 st.write(df_ma)
 st.write_stream(response)
