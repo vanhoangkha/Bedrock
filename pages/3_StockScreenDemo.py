@@ -190,6 +190,8 @@ else:
     figMA.update_yaxes(tickprefix="$")
     
     st.plotly_chart(figMA, use_container_width=True)  
+    df_ma_file = df_ma.to_csv().encode('utf-8')
+    print(df_ma_file)
     st.subheader('Moving Average Convergence Divergence (MACD)')
     numYearMACD = st.number_input('Insert period (Year): ', min_value=1, max_value=10, value=2, key=2) 
     
@@ -335,10 +337,6 @@ else:
 #     fig.update_yaxes(tickprefix="$")
 #     st.plotly_chart(fig, use_container_width=True)
 
-
-
-
-
 def call_claude_sonet_stream(prompt):
 
     prompt_config = {
@@ -374,41 +372,33 @@ def call_claude_sonet_stream(prompt):
             if chunk:
                  delta = json.loads(chunk.get('bytes').decode()).get("delta")
                  if delta:
-                     yield delta.get("content", "delta")
+                     yield delta.get("text")
 
 
 def forecast_price(question, docs): 
-    prompt = """Human: Assume the role as a leading Technical Analysis (TA) expert in the stock market, \
-                a modern counterpart to Charles Dow, John Bollinger, and Alan Andrews. \
-                Your mastery encompasses both stock fundamentals and intricate technical indicators. \
-                You possess the ability to decode complex market dynamics, \
-                providing clear insights and recommendations backed by a thorough understanding of interrelated factors. \
-                Your expertise extends to practical tools like the pandas_ta module, \
-                allowing you to navigate data intricacies with ease. \
-                As a TA authority, your role is to decipher market trends, make informed predictions, and offer valuable perspectives.
-                given TA data as below on the last trading day, what will be the next few days possible stock price movement, entry buy or sell stock? 
-
+    prompt = """Human: here is the data price:
         <text>""" + str(docs) + """</text>
         Question: """ + question + """ 
     \n\nAssistant: """
+
     return call_claude_sonet_stream(prompt)
 
 # Forecast stock
 st.title('Forecast')
 st.write("---")
 st.subheader('Dự đoán với chỉ số MACD')
-response = forecast_price(question="Dựa vào các chỉ số MACD được cung cấp, hãy phân tích giá chứng khoán trong thời gian tới, giá nên mua vào, và bán ra, không chém gió ", docs = df_macd)
+response = forecast_price(question="Dựa vào các chỉ số trên phân tích giá chứng khoán trong thời gian tới", docs = df_macd)
 st.write(df_macd)
 st.write_stream(response)
 
 st.write("---")
 st.subheader('Dự đoán với chỉ số BOLL')
-response = forecast_price(question="Dựa vào các chỉ số BOLL được cung cấp, hãy trên phân tích giá chứng khoán trong thời gian, giá nên mua vào, và bán ra, không chém gió", docs = df_boll)
+response = forecast_price(question="Dựa vào các chỉ số trên phân tích giá chứng khoán trong thời gian tới", docs = df_boll)
 st.write(df_boll)
-st.write(response)
+st.write_stream(response)
 
 st.write("---")
 st.subheader('Dự đoán với chỉ số EMA')
-response = forecast_price(question="Dựa vào các chỉ số MA được cung cấp, hãy phân tích giá chứng khoán trong thời gian tới, giá nên mua vào, và bán ra, không chém gió", docs = df_ma)
+response = forecast_price(question="Dựa vào các chỉ số trên phân tích giá chứng khoán trong thời gian tới", docs = df_ma)
 st.write(df_ma)
-st.write(response)
+st.write_stream(response)
