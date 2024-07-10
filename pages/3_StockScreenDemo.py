@@ -21,7 +21,7 @@ import bs4
 
 from langchain.llms.bedrock import Bedrock
 
-snp500 = pd.read_csv("Datasets/SP500.csv")
+snp500 = pd.read_csv("SP500.csv")
 symbols = snp500['Symbol'].sort_values().tolist()        
 
 ticker = st.sidebar.selectbox(
