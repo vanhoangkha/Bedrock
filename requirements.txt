@@ -15,3 +15,6 @@ pypdf
 langchain_community
 python-dotenv
 botocore
+langchain_aws
+streamlit_chat
+anthropic

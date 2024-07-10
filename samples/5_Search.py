@@ -12,7 +12,7 @@ st.markdown("Định giá cổ phiếu VND theo phương pháp chiết khấu d�
 input_text = st.text_input("Search Knowledge base") 
 if input_text: 
     st_callback = StreamlitCallbackHandler(st.container())
-    response = glib.search(input_text, st_callback) 
+    response = glib.searchOld(input_text, st_callback) 
     st.write(response["result"])
     st.write(response)
 
