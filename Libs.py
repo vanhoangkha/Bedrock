@@ -3,9 +3,9 @@ import boto3, json
 from dotenv import load_dotenv
 from langchain.retrievers.bedrock import AmazonKnowledgeBasesRetriever
 from langchain_community.chat_models.bedrock import BedrockChat
-from langchain.chains import RetrievalQA
-from langchain.prompts import PromptTemplate
-
+from langchain.chains import create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 
 load_dotenv()
 
@@ -69,7 +69,7 @@ def query_document(question, docs):
 
     return call_claude_sonet_stream(prompt)
 
-def create_questions(input_text): 
+def create_questions(input_text, callback): 
     system_prompt = """You are an expert in creating high-quality multiple-choice quesitons and answer pairs 
     based on a given context. Based on the given context (e.g a passage, a paragraph, or a set of information), you should:
     1. Come up with thought-provoking multiple-choice questions that assess the reader's understanding of the context. 
@@ -125,6 +125,7 @@ def search(question, callback):
         Ensure that all information is up-to-date and relevant to the current market conditions. 
         If you don't know the answer, just say that you don't know, don't try to make up an answer.
         Provide your answer in Vietnamese.
+        {context}
         """
 
     # Truncate the question if it's too long
@@ -132,42 +133,27 @@ def search(question, callback):
     truncated_question = question[:max_query_length] if len(question) > max_query_length else question
     bedrock_client = boto3.client('bedrock-runtime', region_name = 'us-east-1')
 
-    model_kwargs_claude = {"max_tokens_to_sample": 1000,
-                           "temperature": 0.5,
-                           "top_p": 1}
+    model_kwargs_claude = { "temperature": 0.5, "top_p": 1}
     llm = BedrockChat(
-        model_id="anthropic.claude-3-sonnet-20240320-v1:0",  # Updated model ID
+        model_id="anthropic.claude-3-sonnet-20240229-v1:0",  # Updated model ID
         client=bedrock_client,
         model_kwargs=model_kwargs_claude,
         streaming=True,
         callbacks=[callback]
     )
 
-    # Create a custom prompt template
-    custom_prompt = """
-    System: {system_prompt}
-    Context: {context}
-    Question: {question}
-    Assistant: Based on the question and the provided context, the response should be specific and use statistics or numbers 
-    when possible.. Remember to respond in Vietnamese.
-    """
-
-    # Create a custom prompt
-    claude_prompt = PromptTemplate(
-        template=custom_prompt,
-        input_variables=["context", "question"]
+    prompt = ChatPromptTemplate.from_messages(
+    [
+        SystemMessagePromptTemplate.from_template(system_prompt),
+        HumanMessagePromptTemplate.from_template("input")
+    ]
     )
 
     # Create the chain with the custom prompt
-    chain = RetrievalQA.from_chain_type(
-        llm=llm,
-        retriever=retriever,
-        return_source_documents=True,
-        chain_type="stuff",
-        chain_type_kwargs={"prompt": claude_prompt,}
-    )
-    print(claude_prompt.format(system_prompt=system_prompt,context='',query=truncated_question))
+    question_answer_chain = create_stuff_documents_chain(llm, prompt)
+    chain = create_retrieval_chain(retriever, question_answer_chain)
+
     # Invoke the chain with the necessary inputs
     return chain.invoke( {
-        "question": truncated_question  
+        "input": truncated_question  
     })
