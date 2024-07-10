@@ -80,7 +80,8 @@ def generate_response(prompt):
         6. Honesty: If you're unsure about something or don't have the necessary information, clearly state this. Do not provide speculative or potentially misleading information.
         7. Language: Provide all responses in Vietnamese.
         8. Adaptability: Tailor your responses to the specific needs and questions of each user, whether they're seeking general market insights or detailed analysis of particular stocks or strategies.
-    """
+        9. Markdown Format: Provide all responses in Markdown format, highlighting key points using bold text.
+       """
     retrieved_docs = retriever.get_relevant_documents(prompt)
     context = "\n".join([doc.page_content for doc in retrieved_docs])
     conversation_history = "\n".join([f"{msg['role'].capitalize()}: {msg['content']}" for msg in st.session_state['messages']])
