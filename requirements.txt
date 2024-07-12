@@ -16,4 +16,6 @@ langchain-aws==0.1.10
 streamlit-chat==0.1.1
 PyPDF2==3.0.1
 pandas-datareader==0.10.0
-anthropic
+anthropic==0.31.0
+vnstock3
+seaborn
