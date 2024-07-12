@@ -17,3 +17,5 @@ botocore
 langchain_aws
 streamlit_chat
 anthropic
+PyPDF2
+pandas-datareader
