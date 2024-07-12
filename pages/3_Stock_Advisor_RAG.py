@@ -7,7 +7,8 @@ from anthropic import Anthropic
 import time
 
 anthropic = Anthropic()
-
+knowledge_base_id=('EWVHJIY9AS'),
+#knowledge_base_id="DMYEBQYJNN", 
 def count_tokens(text):
     return len(anthropic.get_tokenizer().encode(text))
 
@@ -62,7 +63,7 @@ def generate_response(prompt):
 
     bedrock_runtime = boto3.client('bedrock-runtime')
     retriever = AmazonKnowledgeBasesRetriever(
-        knowledge_base_id="EWVHJIY9AS",
+        knowledge_base_id=knowledge_base_id[0], 
         top_k=3,
         retrieval_config={"vectorSearchConfiguration": 
                           {"numberOfResults": 3,
@@ -82,7 +83,7 @@ def generate_response(prompt):
         8. Adaptability: Tailor your responses to the specific needs and questions of each user, whether they're seeking general market insights or detailed analysis of particular stocks or strategies.
         9. Markdown Format: Provide all responses in Markdown format, highlighting key points using bold text.
        """
-    retrieved_docs = retriever.get_relevant_documents(prompt)
+    retrieved_docs = retriever.get_relevant_documents(prompt+" 2024")
     context = "\n".join([doc.page_content for doc in retrieved_docs])
     conversation_history = "\n".join([f"{msg['role'].capitalize()}: {msg['content']}" for msg in st.session_state['messages']])
 
