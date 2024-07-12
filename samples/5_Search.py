@@ -1,6 +1,8 @@
 import streamlit as st 
 import Libs as glib 
 from langchain_community.callbacks.streamlit import StreamlitCallbackHandler
+from langchain.schema.output import LLMResult
+
 
 st.set_page_config(page_title="Search Knowledge base")
 st.markdown("Đánh giá cổ phiếu ACB") 
@@ -10,7 +12,9 @@ st.markdown("Định giá cổ phiếu VND theo phương pháp chiết khấu d�
 input_text = st.text_input("Search Knowledge base") 
 if input_text: 
     st_callback = StreamlitCallbackHandler(st.container())
-    response = glib.search(input_text, st_callback) 
+    response = glib.searchOld(input_text, st_callback) 
     st.write(response["result"])
     st.write(response)
+
+
     
