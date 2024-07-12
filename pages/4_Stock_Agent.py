@@ -309,13 +309,14 @@ def initializeAgent():
 
         Format your response as follows:
         Question: the input question you must answer
-        Thought: you should always think about what to do, Also try to follow steps mentioned above
+        Thought: you should always think about what to do, also try to follow steps mentioned above
         Action: the action to take, should be one of [get company ticker, get stock data, get recent stock news, get financial statements]
         Action Input: the input to the action
         Observation: the result of the action
-        (Repeat Thought/Action/Observation as needed)
+        (Repeat Thought/Action/Observation as needed, but no more than 3 times)
         Thought: I now know the final answer
         Final Answer: Comprehensive response to the user's question
+        Remember all the thoughts and responds are in Vietnamese.
         Here is user's input.
 
         Question: {input}
