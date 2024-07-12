@@ -1,7 +1,17 @@
+[server]
+port = 8080
+enableStaticServing = true
+
+[client]
+showErrorDetails = true
+
+[browser]
+gatherUsageStats = false
+
 [theme]
 base = "dark"
 primaryColor = "rgb(29, 154, 214, 0.9)"
 backgroundColor = "rgb(29, 154, 214, 0.5)"
 secondaryBackgroundColor="rgb(52, 52, 52, 0.9)"
-textColor="#F0F2F6"
+textColor="#F5F5F5"
 font="sans serif"
