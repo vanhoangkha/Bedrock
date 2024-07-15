@@ -7,11 +7,9 @@ from anthropic import Anthropic
 import base
 
 anthropic = Anthropic()
+
 knowledge_base_id=('EWVHJIY9AS'),
-#knowledge_base_id="DMYEBQYJNN", 
-model_name = "Claude-3-Haiku"
 modelId = "anthropic.claude-3-haiku-20240307-v1:0"
-# anthropic.claude-3-5-sonnet-20240620-v1:0
 
 st.set_page_config(page_title="CMC Stock Advisor", page_icon="img/favicon.ico", layout="wide")
 
@@ -30,18 +28,20 @@ if clear_button:
     base.clear_stock_advisor()
 
 def generate_response(prompt):
-    bedrock_runtime = boto3.client('bedrock-runtime')
+    bedrock = boto3.client(service_name="bedrock-runtime")  
+    
     retriever = AmazonKnowledgeBasesRetriever(
-        knowledge_base_id=knowledge_base_id[0], 
-        top_k=3,
-        retrieval_config={"vectorSearchConfiguration": 
-                          {"numberOfResults": 3,
-                           'overrideSearchType': "SEMANTIC",
-                           }
-                          },
+        knowledge_base_id = knowledge_base_id[0], 
+        top_k = 3,
+        retrieval_config = {
+            "vectorSearchConfiguration": {
+                "numberOfResults": 3, 
+                'overrideSearchType': "SEMANTIC"
+            }
+        }
     )
     
-    retrieved_docs = retriever.get_relevant_documents(prompt+" 2024")
+    retrieved_docs = retriever.get_relevant_documents(prompt + " 2024")
     context = "\n".join([doc.page_content for doc in retrieved_docs])
     conversation_history = "\n".join([f"{msg['role'].capitalize()}: {msg['content']}" for msg in st.session_state['messages']])
 
@@ -53,7 +53,7 @@ def generate_response(prompt):
     Assistant: 
     """
  
-    request_body = {
+    prompt_config = {
         "anthropic_version": "bedrock-2023-05-31",
         "max_tokens": 2000,
         "messages": [
@@ -62,12 +62,12 @@ def generate_response(prompt):
         "temperature": 0.7,
         "top_p": 1,
     }
-
-    response = bedrock_runtime.invoke_model_with_response_stream(
-        body=json.dumps(request_body),
+    
+    response = bedrock.invoke_model_with_response_stream(
+        body=json.dumps(prompt_config),
         modelId=modelId,
-        contentType="application/json",
-        accept="application/json"
+        accept="application/json", 
+        contentType="application/json"
     )
 
     stream = response['body']

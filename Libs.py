@@ -7,11 +7,11 @@ from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 from langchain.chains import RetrievalQA
+import base
 
 load_dotenv()
 
 def call_claude_sonet_stream(prompt):
-
     prompt_config = {
         "anthropic_version": "bedrock-2023-05-31",
         "max_tokens": 2000,
@@ -27,15 +27,14 @@ def call_claude_sonet_stream(prompt):
         ],
     }
 
-    body = json.dumps(prompt_config)
-
     modelId = "anthropic.claude-3-sonnet-20240229-v1:0"
-    accept = "application/json"
-    contentType = "application/json"
 
     bedrock = boto3.client(service_name="bedrock-runtime")  
     response = bedrock.invoke_model_with_response_stream(
-        body=body, modelId=modelId, accept=accept, contentType=contentType
+        body=json.dumps(prompt_config),
+        modelId=modelId,
+        accept="application/json", 
+        contentType="application/json"
     )
 
     stream = response['body']
@@ -49,7 +48,7 @@ def call_claude_sonet_stream(prompt):
                     if delta_obj:
                         text = delta_obj.get('text', None)
                         yield text
-    
+                    
 def rewrite_document(input_text): 
     prompt = """Your name is good writer. You need to rewrite content: 
         \n\nHuman: here is the content
