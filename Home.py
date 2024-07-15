@@ -25,8 +25,8 @@ base.init_animation()
 
 if prompt := st.chat_input():
     st.session_state.show_animation = False
-
     st.session_state.messages.append({"role": "user", "content": prompt})
+    
     with st.chat_message(
         "user",
         avatar="https://raw.githubusercontent.com/sahirmaharaj/exifa/main/img/user.gif",

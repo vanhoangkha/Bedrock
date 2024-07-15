@@ -201,14 +201,12 @@ def init_home_state():
       st.session_state.show_animation = True
 
 def init_stock_advisor(): 
+  if "messages" not in st.session_state:
+      st.session_state["messages"] = [{"role": "assistant", "content": message}]
   if 'generated' not in st.session_state:
       st.session_state['generated'] = []
   if 'past' not in st.session_state:
       st.session_state['past'] = []
-  if 'messages' not in st.session_state:
-      st.session_state['messages'] = [
-          {"role": "system", "content": "You are a helpful assistant."}
-      ]
   if 'model_name' not in st.session_state:
       st.session_state['model_name'] = []
   if 'cost' not in st.session_state:
@@ -281,6 +279,7 @@ def clear_chat_history():
     st.success("Chat History Cleared!")
 
 def clear_stock_advisor():
+    st.session_state.show_animation = True
     st.session_state['generated'] = []
     st.session_state['past'] = []
     st.session_state['messages'] = [
