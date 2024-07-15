@@ -18,11 +18,11 @@ st.set_page_config(page_title="CMC Stock Advisor", page_icon="img/favicon.ico", 
 def count_tokens(text):
     return len(anthropic.get_tokenizer().encode(text))
 
+st.markdown("<h3 style='text-align: center;'>RoboStock - Your 24/7 AI financial companion</h3>", unsafe_allow_html=True)
+
 base.init_stock_advisor()
 base.init_slidebar()
 base.init_animation()
-
-st.markdown("<h3 style='text-align: center;'>RoboStock - Your 24/7 AI financial companion</h3>", unsafe_allow_html=True)
 
 clear_button = st.sidebar.button("Clear Conversation", key="clear")
 if clear_button:
@@ -76,43 +76,41 @@ def generate_response(prompt):
 
     return response.get('body'), query
 
-if user_input := st.chat_input():
-    response_stream, query = generate_response(user_input)
-    st.session_state['past'].append(user_input)
-    
-    message_placeholder = st.empty()
-    full_response = ""
 
-    # Process the streaming response
-    for event in response_stream:
-        chunk = event.get('chunk')
-        if chunk:
-            chunk_obj = json.loads(chunk.get('bytes').decode())
-            if 'delta' in chunk_obj:
-                delta_obj = chunk_obj.get('delta', None)
-                if delta_obj:
-                    text = delta_obj.get('text', None)
-                    if text:
-                        full_response += text
-                        message_placeholder.markdown(full_response + "▌")
+if prompt := st.chat_input():
+    st.session_state.show_animation = False
+    st.session_state.messages.append({"role": "user", "content": prompt})
+
+    with st.chat_message(
+        "user",
+        avatar="https://raw.githubusercontent.com/sahirmaharaj/exifa/main/img/user.gif",
+    ):
+        st.write(prompt)
+
+
+if st.session_state.messages[-1]["role"] != "assistant":
+    st.session_state.show_animation = False
+    with st.chat_message(
+        "assistant",
+        avatar="https://cdn.haitrieu.com/wp-content/uploads/2022/12/Icon-Dai-hoc-CMC.png",
+    ):
+        response_stream, query = generate_response(prompt)
         
-    message_placeholder.markdown(full_response)
-    
-    st.session_state['generated'].append(full_response)
-    st.session_state['model_name'].append(model_name)
+        message_placeholder = st.empty()
+        full_response = ""
 
-    total_tokens = count_tokens(query) + count_tokens(full_response)
-    st.session_state['total_tokens'].append(total_tokens)
+        # Process the streaming response
+        for event in response_stream:
+            chunk = event.get('chunk')
+            if chunk:
+                chunk_obj = json.loads(chunk.get('bytes').decode())
+                if 'delta' in chunk_obj:
+                    delta_obj = chunk_obj.get('delta', None)
+                    if delta_obj:
+                        text = delta_obj.get('text', None)
+                        if text:
+                            full_response += text
+                            message_placeholder.markdown(full_response + "▌")
 
-    # Calculate cost (adjust as needed for Claude models)
-    cost = total_tokens * 0.002 / 1000  # This is an example, adjust based on actual pricing
-    st.session_state['cost'].append(cost)
-    st.session_state['total_cost'] += cost
-
-if st.session_state['generated']:
-    for i in range(len(st.session_state['generated'])):
-        message(st.session_state["past"][i], is_user=True, key=str(i) + '_user')
-        message(st.session_state["generated"][i], key=str(i))
-        st.write(
-            f"Model used: {st.session_state['model_name'][i]}; Number of tokens: {st.session_state['total_tokens'][i]}; Cost: $${st.session_state['cost'][i]:.5f}")
-        
+        message = {"role": "assistant", "content": full_response}
+        st.session_state.messages.append(message)
