@@ -78,7 +78,6 @@ def call_claude_sonet_stream(prompt):
                  if delta:
                      yield delta.get("text")
 
-
 def forecast_price(question, docs): 
     prompt = """Human: here is the data price:
         <text>""" + str(docs) + """</text>
@@ -104,22 +103,22 @@ if(infoType == 'PTCB'):
         st.info(info.get('longBusinessSummary', ''))
  
         fundInfo = {
-                'Enterprise Value (USD)': info.get('enterpriseValue', ''),
-                'Enterprise To Revenue Ratio': info.get('enterpriseToRevenue', ''),
-                'Enterprise To Ebitda Ratio': info.get('enterpriseToEbitda', ''),
-                'Net Income (USD)': info.get('netIncomeToCommon', ''),
-                'Profit Margin Ratio': info.get('profitMargins', ''),
-                'Forward PE Ratio': info.get('forwardPE', ''),
-                'PEG Ratio': info.get('pegRatio', ''),
-                'Price to Book Ratio': info.get('priceToBook', ''),
-                'Forward EPS (USD)': info.get('forwardEps', ''),
-                'Beta ': info.get('beta', ''),
-                'Book Value (USD)': info.get('bookValue', ''),
-                'Dividend Rate (%)': info.get('dividendRate', ''), 
-                'Dividend Yield (%)': info.get('dividendYield', ''),
-                'Five year Avg Dividend Yield (%)': info.get('fiveYearAvgDividendYield', ''),
-                'Payout Ratio': info.get('payoutRatio', '')
-            }
+            'Enterprise Value (USD)': info.get('enterpriseValue', ''),
+            'Enterprise To Revenue Ratio': info.get('enterpriseToRevenue', ''),
+            'Enterprise To Ebitda Ratio': info.get('enterpriseToEbitda', ''),
+            'Net Income (USD)': info.get('netIncomeToCommon', ''),
+            'Profit Margin Ratio': info.get('profitMargins', ''),
+            'Forward PE Ratio': info.get('forwardPE', ''),
+            'PEG Ratio': info.get('pegRatio', ''),
+            'Price to Book Ratio': info.get('priceToBook', ''),
+            'Forward EPS (USD)': info.get('forwardEps', ''),
+            'Beta ': info.get('beta', ''),
+            'Book Value (USD)': info.get('bookValue', ''),
+            'Dividend Rate (%)': info.get('dividendRate', ''), 
+            'Dividend Yield (%)': info.get('dividendYield', ''),
+            'Five year Avg Dividend Yield (%)': info.get('fiveYearAvgDividendYield', ''),
+            'Payout Ratio': info.get('payoutRatio', '')
+        }
         
         fundDF = pd.DataFrame.from_dict(fundInfo, orient='index')
         fundDF = fundDF.rename(columns={0: 'Value'})
@@ -137,7 +136,8 @@ if(infoType == 'PTCB'):
         df = df.reset_index()
         fig = go.Figure(
                 data=go.Scatter(x=df['Date'], y=df['Adj Close'])
-            )
+        )
+        
         fig.update_layout(
             title={
                 'text': "Stock Prices Over Past Two Years",
@@ -196,7 +196,6 @@ else:
     with coMA2:
         windowSizeMA = st.number_input('Window Size (Day): ', min_value=5, max_value=500, value=20, key=1)  
         
-
     start = dt.datetime.today()-dt.timedelta(numYearMA * 365)
     end = dt.datetime.today()
     dataMA = yf.download(ticker,start,end)
@@ -333,7 +332,6 @@ else:
                 )
         )
     
-    
     figBoll.add_trace(
                 go.Scatter(
                         x = df_boll['Date'],
@@ -361,7 +359,6 @@ else:
     
     figBoll.update_yaxes(tickprefix="$")
     st.plotly_chart(figBoll, use_container_width=True)
-    
     
     # Forecast stock
     st.title('Forecast')
