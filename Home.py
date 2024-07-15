@@ -1,217 +1,14 @@
 import streamlit as st
-import pandas as pd
-from transformers import AutoTokenizer
 import streamlit.components.v1 as components
-import random
 import Libs as glib 
-
-icons = {
-    "assistant": "https://cdn.haitrieu.com/wp-content/uploads/2022/12/Icon-Dai-hoc-CMC.png",
-    "user": "https://raw.githubusercontent.com/sahirmaharaj/exifa/2f685de7dffb583f2b2a89cb8ee8bc27bf5b1a40/img/user-done.svg",
-}
-
-particles_js = """<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Particles.js</title>
-  <style>
-  #particles-js {
-    position: fixed;
-    width: 100vw;
-    height: 100vh;
-    top: 0;
-    left: 0;
-    z-index: -1; /* Send the animation to the back */
-  }
-  .content {
-    position: relative;
-    z-index: 1;
-    color: white;
-  }
-  
-</style>
-</head>
-<body>
-  <div id="particles-js"></div>
-  <div class="content">
-    <!-- Placeholder for Streamlit content -->
-  </div>
-  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-  <script>
-    particlesJS("particles-js", {
-      "particles": {
-        "number": {
-          "value": 300,
-          "density": {
-            "enable": true,
-            "value_area": 800
-          }
-        },
-        "color": {
-          "value": "#ffffff"
-        },
-        "shape": {
-          "type": "circle",
-          "stroke": {
-            "width": 0,
-            "color": "#000000"
-          },
-          "polygon": {
-            "nb_sides": 5
-          },
-          "image": {
-            "src": "img/github.svg",
-            "width": 100,
-            "height": 100
-          }
-        },
-        "opacity": {
-          "value": 0.5,
-          "random": false,
-          "anim": {
-            "enable": false,
-            "speed": 1,
-            "opacity_min": 0.2,
-            "sync": false
-          }
-        },
-        "size": {
-          "value": 2,
-          "random": true,
-          "anim": {
-            "enable": false,
-            "speed": 40,
-            "size_min": 0.1,
-            "sync": false
-          }
-        },
-        "line_linked": {
-          "enable": true,
-          "distance": 100,
-          "color": "#ffffff",
-          "opacity": 0.22,
-          "width": 1
-        },
-        "move": {
-          "enable": true,
-          "speed": 0.2,
-          "direction": "none",
-          "random": false,
-          "straight": false,
-          "out_mode": "out",
-          "bounce": true,
-          "attract": {
-            "enable": false,
-            "rotateX": 600,
-            "rotateY": 1200
-          }
-        }
-      },
-      "interactivity": {
-        "detect_on": "canvas",
-        "events": {
-          "onhover": {
-            "enable": true,
-            "mode": "grab"
-          },
-          "onclick": {
-            "enable": true,
-            "mode": "repulse"
-          },
-          "resize": true
-        },
-        "modes": {
-          "grab": {
-            "distance": 100,
-            "line_linked": {
-              "opacity": 1
-            }
-          },
-          "bubble": {
-            "distance": 400,
-            "size": 2,
-            "duration": 2,
-            "opacity": 0.5,
-            "speed": 1
-          },
-          "repulse": {
-            "distance": 200,
-            "duration": 0.4
-          },
-          "push": {
-            "particles_nb": 2
-          },
-          "remove": {
-            "particles_nb": 3
-          }
-        }
-      },
-      "retina_detect": true
-    });
-  </script>
-</body>
-</html>
-"""
-
-st.set_page_config(page_title="CMCTS", page_icon="img/favicon.ico", layout="wide")
-
-welcome_messages = [
-    "Hello! I'm CMCTS, an AI assistant designed to make image metadata meaningful. Ask me anything!",
-    "Hi! I'm CMCTS, an AI-powered assistant for extracting and explaining CMCTS data. How can I help you today?",
-    "Hey! I'm CMCTS, your AI-powered guide to understanding the metadata in your images. What would you like to explore?",
-    "Hi there! I'm CMCTS, an AI-powered tool built to help you make sense of your image metadata. How can I help you today?",
-    "Hello! I'm CMCTS, an AI-driven tool designed to help you understand your images' metadata. What can I do for you?",
-    "Hi! I'm CMCTS, an AI-driven assistant designed to make CMCTS data easy to understand. How can I help you today?",
-    "Welcome! I'm CMCTS, an intelligent AI-powered tool for extracting and explaining CMCTS data. How can I assist you today?",
-    "Hello! I'm CMCTS, your AI-powered guide for understanding image metadata. Ask me anything!",
-    "Hi! I'm CMCTS, an intelligent AI assistant ready to help you understand your images' metadata. What would you like to explore?",
-    "Hey! I'm CMCTS, an AI assistant for extracting and explaining CMCTS data. How can I help you today?",
-]
-
-message = random.choice(welcome_messages)
-
-if "messages" not in st.session_state:
-    st.session_state["messages"] = [{"role": "assistant", "content": message}]
-if "exif_df" not in st.session_state:
-    st.session_state["exif_df"] = pd.DataFrame()
-if "url_exif_df" not in st.session_state:
-    st.session_state["url_exif_df"] = pd.DataFrame()
-if "show_expanders" not in st.session_state:
-    st.session_state.show_expanders = True
-if "reset_trigger" not in st.session_state:
-    st.session_state.reset_trigger = False
-if "image_url" not in st.session_state:
-    st.session_state["image_url"] = ""
-if "follow_up" not in st.session_state:
-    st.session_state.follow_up = False
-if "show_animation" not in st.session_state:
-    st.session_state.show_animation = True
-
-
-def clear_chat_history():
-
-    st.session_state.reset_trigger = not st.session_state.reset_trigger
-    st.session_state.show_expanders = True
-
-    st.session_state.show_animation = True
-
-    st.session_state.messages = [{"role": "assistant", "content": message}]
-
-    st.session_state["exif_df"] = pd.DataFrame()
-    st.session_state["url_exif_df"] = pd.DataFrame()
-
-    st.cache_data.clear()
-
-    st.success("Chat History Cleared!")
+import base
 
 def generate_response(prompt):
-    if get_num_tokens(prompt) >= 1000000:
+    if base.get_num_tokens(prompt) >= 1000000:
         st.error("Conversation length too long. Please keep it under 1000000 tokens.")
         st.button(
             "🗑 Clear Chat History",
-            on_click=clear_chat_history,
+            on_click=base.clear_chat_history,
             key="clear_chat_history",
         )
         st.stop()
@@ -219,60 +16,12 @@ def generate_response(prompt):
     response = glib.call_claude_sonet_stream(prompt)
     return response
 
-with st.sidebar:
-    # st.sidebar.image("img/cmc.webp")
+st.set_page_config(page_title="CMCTS", page_icon="img/favicon.ico", layout="wide")
 
-    image_url = (
-        "https://cdn.haitrieu.com/wp-content/uploads/2022/12/Icon-Dai-hoc-CMC.png"
-    )
-
-    st.markdown(
-        f"""
-        <div style='display: flex; align-items: center;'>
-            <img src='{image_url}' style='width: 50px; height: 50px; margin-right: 30px;'>
-            <h1 style='margin: 0;'>CMCTS</h1>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        """
-        <style>
-            [data-testid="stSidebarNav"]::before {
-                content: "CMCTS";
-                margin-left: 20px;
-                margin-top: 20px;
-                font-size: 20px;
-                position: relative;
-            }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
-@st.experimental_dialog("How to use CMCTS", width=1920)
-def show_video(video_url):
-    st.video(video_url, loop=False, autoplay=True, muted=False)
-
-for message in st.session_state.messages:
-    with st.chat_message(message["role"], avatar=icons[message["role"]]):
-        st.write(message["content"])
-        if message == st.session_state["messages"][0]:
-            if st.button("How can I use CMCTS?"):
-                show_video("https://www.youtube.com/watch?v=2mHuRiBr_ZQ")
-
-@st.cache_resource(show_spinner=False)
-def get_tokenizer():
-    return AutoTokenizer.from_pretrained("huggyllama/llama-7b")
-
-def get_num_tokens(prompt):
-    tokenizer = get_tokenizer()
-    tokens = tokenizer.tokenize(prompt)
-    return len(tokens)
-
-def display_question():
-    st.session_state.follow_up = True
+base.init_home_state()
+base.init_slidebar()
+base.init_dialog()
+base.init_animation()
 
 if prompt := st.chat_input():
     st.session_state.show_animation = False
@@ -295,14 +44,3 @@ if st.session_state.messages[-1]["role"] != "assistant":
         full_response = st.write_stream(response)
         message = {"role": "assistant", "content": full_response}
         st.session_state.messages.append(message)
-
-if st.session_state.reset_trigger:
-    unique_key = "chat_input_" + str(hash("Snowflake Arctic is cool"))
-    st.session_state.show_animation = False
-    
-if "has_snowed" not in st.session_state:
-    st.snow()
-    st.session_state["has_snowed"] = True
-
-if st.session_state.show_animation:
-    components.html(particles_js, height=370, scrolling=False)
