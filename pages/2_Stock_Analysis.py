@@ -20,6 +20,13 @@ from langchain_core.output_parsers import StrOutputParser
 import bs4
 
 from langchain.llms.bedrock import Bedrock
+import base
+
+st.title('Technical Indicators')
+st.subheader('Moving Average')
+
+base.init_slidebar()
+base.init_animation()
 
 snp500 = pd.read_csv("SP500.csv")
 symbols = snp500['Symbol'].sort_values().tolist()        
@@ -31,7 +38,6 @@ ticker = st.sidebar.selectbox(
 infoType = st.sidebar.radio(
         "Chọn kiểu phân tích",
         ('PTCB', 'PTKT')
-
     )
 
 stock = yf.Ticker(ticker)
@@ -134,9 +140,6 @@ else:
         df["width"] = df["bolu"] - df["bold"]
         df.dropna(inplace=True)
         return df
-
-    st.title('Technical Indicators')
-    st.subheader('Moving Average')
     
     coMA1, coMA2 = st.columns(2)
     
@@ -315,27 +318,27 @@ else:
 
 
 # price
-# st.title('Price')
-# def get_stock_price(ticker, history=500):
-#     today = dt.datetime.today()
-#     start_date = today - dt.timedelta(days=history)
-#     df_price = pdr.get_data_yahoo(ticker, start=start_date, end=today)
-#     #print(df_price)
-#     return df_price
+st.title('Price')
+def get_stock_price(ticker, history=500):
+    today = dt.datetime.today()
+    start_date = today - dt.timedelta(days=history)
+    df_price = pdr.get_data_yahoo(ticker, start=start_date, end=today)
+    #print(df_price)
+    return df_price
 
-# def plot_stock_price(ticker, history=500):
-#     df_price = get_stock_price(ticker, history)
+def plot_stock_price(ticker, history=500):
+    df_price = get_stock_price(ticker, history)
     
-#     # Create the price chart
-#     fig = go.Figure(df_price=[go.Scatter(x=df['Date'], y=df_price['Adj Close'], mode='lines', name='Adjusted Close')])
-#     fig.update_layout(
-#         title=f'Stock Price for {ticker}',
-#         xaxis_title='Date',
-#         yaxis_title='Price ($)',
-#         yaxis_tickprefix='$'
-#     )
-#     fig.update_yaxes(tickprefix="$")
-#     st.plotly_chart(fig, use_container_width=True)
+    # Create the price chart
+    fig = go.Figure(df_price=[go.Scatter(x=df['Date'], y=df_price['Adj Close'], mode='lines', name='Adjusted Close')])
+    fig.update_layout(
+        title=f'Stock Price for {ticker}',
+        xaxis_title='Date',
+        yaxis_title='Price ($)',
+        yaxis_tickprefix='$'
+    )
+    fig.update_yaxes(tickprefix="$")
+    st.plotly_chart(fig, use_container_width=True)
 
 def call_claude_sonet_stream(prompt):
 

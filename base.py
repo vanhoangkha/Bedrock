@@ -228,7 +228,6 @@ def init_slidebar():
               [data-testid="stSidebarNav"]::before {
                   content: "CMCTS";
                   margin-left: 20px;
-                  margin-top: 20px;
                   font-size: 20px;
                   position: relative;
               }

@@ -12,6 +12,7 @@ knowledge_base_id=('EWVHJIY9AS'),
 modelId = "anthropic.claude-3-haiku-20240307-v1:0"
 
 st.set_page_config(page_title="CMC Stock Advisor", page_icon="img/favicon.ico", layout="wide")
+st.title('CMC Stock Advisor')
 
 def count_tokens(text):
     return len(anthropic.get_tokenizer().encode(text))
