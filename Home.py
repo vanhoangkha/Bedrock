@@ -18,7 +18,7 @@ def generate_response(prompt):
 
 st.set_page_config(page_title="CMCTS", page_icon="img/favicon.ico", layout="wide")
 
-base.init_home_state()
+base.init_home_state(None)
 base.init_slidebar()
 base.init_dialog()
 base.init_animation()
@@ -40,7 +40,8 @@ if st.session_state.messages[-1]["role"] != "assistant":
         "user",
         avatar="https://cdn.haitrieu.com/wp-content/uploads/2022/12/Icon-Dai-hoc-CMC.png",
     ):
-        response = generate_response(prompt)
-        full_response = st.write_stream(response)
-        message = {"role": "assistant", "content": full_response}
-        st.session_state.messages.append(message)
+        if prompt:
+            response = generate_response(prompt)
+            full_response = st.write_stream(response)
+            message = {"role": "assistant", "content": full_response}
+            st.session_state.messages.append(message)

@@ -16,9 +16,7 @@ st.set_page_config(page_title="CMC Stock Advisor", page_icon="img/favicon.ico", 
 def count_tokens(text):
     return len(anthropic.get_tokenizer().encode(text))
 
-st.markdown("<h4 style='text-align: center;'>RoboStock - Your 24/7 AI financial companion</h4>", unsafe_allow_html=True)
-
-base.init_home_state()
+base.init_home_state("RoboStock - Your 24/7 AI financial companion")
 base.init_slidebar()
 base.init_dialog()
 base.init_animation()
@@ -97,8 +95,9 @@ if st.session_state.messages[-1]["role"] != "assistant":
         "user",
         avatar="https://cdn.haitrieu.com/wp-content/uploads/2022/12/Icon-Dai-hoc-CMC.png",
     ):
-        response = generate_response(prompt)
-        full_response = st.write_stream(response)
-        message = {"role": "assistant", "content": full_response}
-        st.session_state.messages.append(message)
+        if prompt:
+            response = generate_response(prompt)
+            full_response = st.write_stream(response)
+            message = {"role": "assistant", "content": full_response}
+            st.session_state.messages.append(message)
 
