@@ -4,22 +4,8 @@ import streamlit as st
 import datetime as dt
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import pandas_datareader as pdr
-import time
-from prophet import Prophet
-import numpy as np
-import os
 import boto3, json
-from dotenv import load_dotenv
-from langchain_community.retrievers import AmazonKnowledgeBasesRetriever
-from langchain.chains import RetrievalQA
-from langchain_community.chat_models import BedrockChat
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnablePassthrough
-from langchain_core.output_parsers import StrOutputParser
-import bs4
-
-from langchain.llms.bedrock import Bedrock
+import pandas_datareader as pdr
 import base
 
 st.title('Technical Indicators')
@@ -29,92 +15,153 @@ base.init_slidebar()
 base.init_animation()
 
 snp500 = pd.read_csv("SP500.csv")
-symbols = snp500['Symbol'].sort_values().tolist()        
+symbols = snp500['Symbol'].sort_values().tolist()    
 
-ticker = st.sidebar.selectbox(
-    'Chọn mã chứng khoán',
-     symbols)
+ticker = st.sidebar.selectbox('Chọn mã chứng khoán', symbols)
+infoType = st.sidebar.radio("Chọn kiểu phân tích", ('PTKT', 'PTCB'))
 
-infoType = st.sidebar.radio(
-        "Chọn kiểu phân tích",
-        ('PTCB', 'PTKT')
+# price
+# st.title('Price')
+def get_stock_price(ticker, history=500):
+    today = dt.datetime.today()
+    start_date = today - dt.timedelta(days=history)
+    df_price = pdr.get_data_yahoo(ticker, start=start_date, end=today)
+    #print(df_price)
+    return df_price
+
+def plot_stock_price(ticker, history=500):
+    df_price = get_stock_price(ticker, history)
+    # Create the price chart
+    fig = go.Figure(df_price=[go.Scatter(x=df['Date'], y=df_price['Adj Close'], mode='lines', name='Adjusted Close')])
+    fig.update_layout(
+        title=f'Stock Price for {ticker}',
+        xaxis_title='Date',
+        yaxis_title='Price ($)',
+        yaxis_tickprefix='$'
     )
+    fig.update_yaxes(tickprefix="$")
+    st.plotly_chart(fig, use_container_width=True)
+
+def call_claude_sonet_stream(prompt):
+    prompt_config = {
+        "anthropic_version": "bedrock-2023-05-31",
+        "max_tokens": 2000,
+        "temperature": 0, 
+        "top_k": 0,
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt},
+                ],
+            }
+        ],
+    }
+
+    body = json.dumps(prompt_config)
+
+    modelId = "anthropic.claude-3-sonnet-20240229-v1:0"
+    accept = "application/json"
+    contentType = "application/json"
+
+    bedrock = boto3.client(service_name="bedrock-runtime")  
+    response = bedrock.invoke_model_with_response_stream(
+        body=body, modelId=modelId, accept=accept, contentType=contentType
+    )
+
+    stream = response['body']
+    if stream:
+        for event in stream:
+            chunk = event.get('chunk')
+            if chunk:
+                 delta = json.loads(chunk.get('bytes').decode()).get("delta")
+                 if delta:
+                     yield delta.get("text")
+
+
+def forecast_price(question, docs): 
+    prompt = """Human: here is the data price:
+        <text>""" + str(docs) + """</text>
+        Question: """ + question + """ 
+    \n\nAssistant: """
+    return call_claude_sonet_stream(prompt)
 
 stock = yf.Ticker(ticker)
 
-if(infoType == 'Fundam'):
+if(infoType == 'PTCB'):
     stock = yf.Ticker(ticker)
     info = stock.info 
-    st.title('Company Profile')
-    #st.subheader(info['name']) 
-    # st.markdown('** Sector **: ' + info['sector'])
-    # st.markdown('** Industry **: ' + info['industry'])
-    # st.markdown('** Phone **: ' + info['phone'])
-    # st.markdown('** Address **: ' + info['address1'] + ', ' + info['city'] + ', ' + info['zip'] + ', '  +  info['country'])
-    # st.markdown('** Website **: ' + info['website'])
-    #st.markdown('** Business Summary **')
-    #st.info(info['longBusinessSummary'])
+    if info:
+        print(info)
+        st.title('Company Profile')
+        st.subheader(info.get('name', '')) 
+        st.markdown('** Sector **: ' + info.get('sector', ''))
+        st.markdown('** Industry **: ' + info.get('industry', ''))
+        st.markdown('** Phone **: ' + info.get('phone', ''))
+        st.markdown('** Address **: ' + info.get('address1', '') + ', ' + info.get('city', '') + ', ' + info.get('zip', '') + ', '  +  info.get('country', ''))
+        st.markdown('** Website **: ' + info.get('website', ''))
+        st.markdown('** Business Summary **')
+        st.info(info.get('longBusinessSummary', ''))
+ 
+        fundInfo = {
+                'Enterprise Value (USD)': info.get('enterpriseValue', ''),
+                'Enterprise To Revenue Ratio': info.get('enterpriseToRevenue', ''),
+                'Enterprise To Ebitda Ratio': info.get('enterpriseToEbitda', ''),
+                'Net Income (USD)': info.get('netIncomeToCommon', ''),
+                'Profit Margin Ratio': info.get('profitMargins', ''),
+                'Forward PE Ratio': info.get('forwardPE', ''),
+                'PEG Ratio': info.get('pegRatio', ''),
+                'Price to Book Ratio': info.get('priceToBook', ''),
+                'Forward EPS (USD)': info.get('forwardEps', ''),
+                'Beta ': info.get('beta', ''),
+                'Book Value (USD)': info.get('bookValue', ''),
+                'Dividend Rate (%)': info.get('dividendRate', ''), 
+                'Dividend Yield (%)': info.get('dividendYield', ''),
+                'Five year Avg Dividend Yield (%)': info.get('fiveYearAvgDividendYield', ''),
+                'Payout Ratio': info.get('payoutRatio', '')
+            }
         
-    fundInfo = {
-            'Enterprise Value (USD)': info['enterpriseValue'],
-            'Enterprise To Revenue Ratio': info['enterpriseToRevenue'],
-            'Enterprise To Ebitda Ratio': info['enterpriseToEbitda'],
-            'Net Income (USD)': info['netIncomeToCommon'],
-            'Profit Margin Ratio': info['profitMargins'],
-            'Forward PE Ratio': info['forwardPE'],
-            'PEG Ratio': info['pegRatio'],
-            'Price to Book Ratio': info['priceToBook'],
-            'Forward EPS (USD)': info['forwardEps'],
-            'Beta ': info['beta'],
-            'Book Value (USD)': info['bookValue'],
-            'Dividend Rate (%)': info['dividendRate'], 
-            'Dividend Yield (%)': info['dividendYield'],
-            'Five year Avg Dividend Yield (%)': info['fiveYearAvgDividendYield'],
-            'Payout Ratio': info['payoutRatio']
-        }
+        fundDF = pd.DataFrame.from_dict(fundInfo, orient='index')
+        fundDF = fundDF.rename(columns={0: 'Value'})
+        st.subheader('Fundamental Info') 
+        st.table(fundDF)
+        
+        st.subheader('General Stock Info') 
+        st.markdown('** Market **: ' + info.get('market', ''))
+        st.markdown('** Exchange **: ' + info.get('exchange', ''))
+        st.markdown('** Quote Type **: ' + info.get('quoteType', ''))
+        
+        start = dt.datetime.today()-dt.timedelta(365)
+        end = dt.datetime.today()
+        df = yf.download(ticker,start,end)
+        df = df.reset_index()
+        fig = go.Figure(
+                data=go.Scatter(x=df['Date'], y=df['Adj Close'])
+            )
+        fig.update_layout(
+            title={
+                'text': "Stock Prices Over Past Two Years",
+                'y':0.9,
+                'x':0.5,
+                'xanchor': 'center',
+                'yanchor': 'top'})
+        st.plotly_chart(fig, use_container_width=True)
     
-    fundDF = pd.DataFrame.from_dict(fundInfo, orient='index')
-    fundDF = fundDF.rename(columns={0: 'Value'})
-    st.subheader('Fundamental Info') 
-    st.table(fundDF)
-    
-    st.subheader('General Stock Info') 
-    st.markdown('** Market **: ' + info['market'])
-    st.markdown('** Exchange **: ' + info['exchange'])
-    st.markdown('** Quote Type **: ' + info['quoteType'])
-    
-    start = dt.datetime.today()-dt.timedelta(365)
-    end = dt.datetime.today()
-    df = yf.download(ticker,start,end)
-    df = df.reset_index()
-    fig = go.Figure(
-            data=go.Scatter(x=df['Date'], y=df['Adj Close'])
-        )
-    fig.update_layout(
-        title={
-            'text': "Stock Prices Over Past Two Years",
-            'y':0.9,
-            'x':0.5,
-            'xanchor': 'center',
-            'yanchor': 'top'})
-    st.plotly_chart(fig, use_container_width=True)
-  
-    marketInfo = {
-            "Volume": info['volume'],
-            "Average Volume": info['averageVolume'],
-            "Market Cap": info["marketCap"],
-            "Float Shares": info['floatShares'],
-            "Regular Market Price (USD)": info['regularMarketPrice'],
-            'Bid Size': info['bidSize'],
-            'Ask Size': info['askSize'],
-            "Share Short": info['sharesShort'],
-            'Short Ratio': info['shortRatio'],
-            'Share Outstanding': info['sharesOutstanding']
-    
-        }
-    
-    marketDF = pd.DataFrame(data=marketInfo, index=[0])
-    st.table(marketDF)
+        marketInfo = {
+                "Volume": info.get('volume', ''),
+                "Average Volume": info.get('averageVolume', ''),
+                "Market Cap": info.get('marketCap', ''),
+                "Float Shares": info.get('floatShares', ''),
+                "Regular Market Price (USD)": info.get('regularMarketPrice', ''),
+                'Bid Size': info.get('bidSize', ''),
+                'Ask Size': info.get('askSize', ''),
+                "Share Short": info.get('sharesShort', ''),
+                'Short Ratio': info.get('shortRatio', ''),
+                'Share Outstanding': info.get('sharesOutstanding', '')
+            }
+        
+        marketDF = pd.DataFrame(data=marketInfo, index=[0])
+        st.table(marketDF)
 else:
     def calcMovingAverage(data, size):
         df = data.copy()
@@ -314,94 +361,24 @@ else:
     
     figBoll.update_yaxes(tickprefix="$")
     st.plotly_chart(figBoll, use_container_width=True)
-# print(df_boll)
-
-
-# price
-st.title('Price')
-def get_stock_price(ticker, history=500):
-    today = dt.datetime.today()
-    start_date = today - dt.timedelta(days=history)
-    df_price = pdr.get_data_yahoo(ticker, start=start_date, end=today)
-    #print(df_price)
-    return df_price
-
-def plot_stock_price(ticker, history=500):
-    df_price = get_stock_price(ticker, history)
     
-    # Create the price chart
-    fig = go.Figure(df_price=[go.Scatter(x=df['Date'], y=df_price['Adj Close'], mode='lines', name='Adjusted Close')])
-    fig.update_layout(
-        title=f'Stock Price for {ticker}',
-        xaxis_title='Date',
-        yaxis_title='Price ($)',
-        yaxis_tickprefix='$'
-    )
-    fig.update_yaxes(tickprefix="$")
-    st.plotly_chart(fig, use_container_width=True)
+    
+    # Forecast stock
+    st.title('Forecast')
+    st.write("---")
+    st.subheader('Dự đoán với chỉ số MACD')
+    response = forecast_price(question="Dựa vào các chỉ số trên đưa ra phân tích giá chứng khoán trong thời gian tới,thời điểm, đưa ra giá mua vào và bán ra cổ phiếu cụ thể, giá cổ phiếu là VND", docs = df_macd)
+    st.write(df_macd)
+    st.write_stream(response)
 
-def call_claude_sonet_stream(prompt):
+    st.write("---")
+    st.subheader('Dự đoán với chỉ số BOLL')
+    response = forecast_price(question="Dựa vào các chỉ số trên phân tích giá chứng khoán trong thời gian tới,thời điểm, đưa ra giá mua vào và bán ra cổ phiếu cụ thể, giá cổ phiếu là VND", docs = df_boll)
+    st.write(df_boll)
+    st.write_stream(response)
 
-    prompt_config = {
-        "anthropic_version": "bedrock-2023-05-31",
-        "max_tokens": 2000,
-        "temperature": 0, 
-        "top_k": 0,
-        "messages": [
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": prompt},
-                ],
-            }
-        ],
-    }
-
-    body = json.dumps(prompt_config)
-
-    modelId = "anthropic.claude-3-sonnet-20240229-v1:0"
-    accept = "application/json"
-    contentType = "application/json"
-
-    bedrock = boto3.client(service_name="bedrock-runtime")  
-    response = bedrock.invoke_model_with_response_stream(
-        body=body, modelId=modelId, accept=accept, contentType=contentType
-    )
-
-    stream = response['body']
-    if stream:
-        for event in stream:
-            chunk = event.get('chunk')
-            if chunk:
-                 delta = json.loads(chunk.get('bytes').decode()).get("delta")
-                 if delta:
-                     yield delta.get("text")
-
-
-def forecast_price(question, docs): 
-    prompt = """Human: here is the data price:
-        <text>""" + str(docs) + """</text>
-        Question: """ + question + """ 
-    \n\nAssistant: """
-
-    return call_claude_sonet_stream(prompt)
-
-# Forecast stock
-st.title('Forecast')
-st.write("---")
-st.subheader('Dự đoán với chỉ số MACD')
-response = forecast_price(question="Dựa vào các chỉ số trên đưa ra phân tích giá chứng khoán trong thời gian tới,thời điểm, đưa ra giá mua vào và bán ra cổ phiếu cụ thể, giá cổ phiếu là VND", docs = df_macd)
-st.write(df_macd)
-st.write_stream(response)
-
-st.write("---")
-st.subheader('Dự đoán với chỉ số BOLL')
-response = forecast_price(question="Dựa vào các chỉ số trên phân tích giá chứng khoán trong thời gian tới,thời điểm, đưa ra giá mua vào và bán ra cổ phiếu cụ thể, giá cổ phiếu là VND", docs = df_boll)
-st.write(df_boll)
-st.write_stream(response)
-
-st.write("---")
-st.subheader('Dự đoán với chỉ số EMA')
-response = forecast_price(question="Dựa vào các chỉ số trên phân tích giá chứng khoán trong thời gian tới,thời điểm, đưa ra giá mua vào và bán ra cổ phiếu cụ thể, giá cổ phiếu là VND", docs = df_ma)
-st.write(df_ma)
-st.write_stream(response)
+    st.write("---")
+    st.subheader('Dự đoán với chỉ số EMA')
+    response = forecast_price(question="Dựa vào các chỉ số trên phân tích giá chứng khoán trong thời gian tới,thời điểm, đưa ra giá mua vào và bán ra cổ phiếu cụ thể, giá cổ phiếu là VND", docs = df_ma)
+    st.write(df_ma)
+    st.write_stream(response)
