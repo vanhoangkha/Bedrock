@@ -215,7 +215,7 @@ def init_slidebar():
       st.markdown(
           f"""
           <div style='display: flex; align-items: center;'>
-              <img src='{image_url}' style='width: 50px; height: 50px; margin-right: 30px;'>
+              <img src='{image_url}' style='background-color: rgb(255,255,255,0.9); height: 64px; padding: 10px; margin-right: 10px;'>
               <h1 style='margin: 0;'>CMCTS</h1>
           </div>
           """,
@@ -256,6 +256,20 @@ def init_dialog():
         if message == st.session_state["messages"][0]:
             if st.button("How can I use CMCTS?"):
                 show_video("https://www.youtube.com/watch?v=2mHuRiBr_ZQ")
+                
+                
+def right_message(st, message):
+    st.markdown(
+        f"""
+        <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 10px;">
+            <div style="text-align: right;">
+                {message}
+            </div>
+            <img src="https://raw.githubusercontent.com/sahirmaharaj/exifa/main/img/user.gif" alt="avatar" style="width: 40px; height: 40px; border-radius: 50%; margin-left: 10px;">
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 def clear_chat_history():
     st.session_state.reset_trigger = not st.session_state.reset_trigger
