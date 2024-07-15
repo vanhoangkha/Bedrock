@@ -3,7 +3,6 @@ import pandas as pd
 from transformers import AutoTokenizer
 import streamlit.components.v1 as components
 import random
-import Libs as glib 
 
 icons = {
     "assistant": "https://cdn.haitrieu.com/wp-content/uploads/2022/12/Icon-Dai-hoc-CMC.png",

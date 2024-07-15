@@ -1,4 +1,3 @@
-import os
 import boto3, json
 from dotenv import load_dotenv
 from langchain.retrievers.bedrock import AmazonKnowledgeBasesRetriever
@@ -7,7 +6,6 @@ from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 from langchain.chains import RetrievalQA
-import base
 
 load_dotenv()
 
