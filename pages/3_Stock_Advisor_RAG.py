@@ -20,7 +20,7 @@ def count_tokens(text):
 
 st.markdown("<h3 style='text-align: center;'>RoboStock - Your 24/7 AI financial companion</h3>", unsafe_allow_html=True)
 
-base.init_stock_advisor()
+base.init_home_state()
 base.init_slidebar()
 base.init_animation()
 
@@ -29,11 +29,6 @@ if clear_button:
     base.clear_stock_advisor()
 
 def generate_response(prompt):
-    # Initialize the session state for messages if it doesn't exist
-    if 'messages' not in st.session_state:
-        st.session_state['messages'] = []
-    st.session_state['messages'].append({"role": "user", "content": prompt})
-
     bedrock_runtime = boto3.client('bedrock-runtime')
     retriever = AmazonKnowledgeBasesRetriever(
         knowledge_base_id=knowledge_base_id[0], 
@@ -74,33 +69,9 @@ def generate_response(prompt):
         accept="application/json"
     )
 
-    return response.get('body'), query
-
-
-if prompt := st.chat_input():
-    st.session_state.show_animation = False
-    st.session_state.messages.append({"role": "user", "content": prompt})
-
-    with st.chat_message(
-        "user",
-        avatar="https://raw.githubusercontent.com/sahirmaharaj/exifa/main/img/user.gif",
-    ):
-        st.write(prompt)
-
-
-if st.session_state.messages[-1]["role"] != "assistant":
-    st.session_state.show_animation = False
-    with st.chat_message(
-        "user",
-        avatar="https://cdn.haitrieu.com/wp-content/uploads/2022/12/Icon-Dai-hoc-CMC.png",
-    ):
-        response_stream, query = generate_response(prompt)
-        
-        message_placeholder = st.empty()
-        full_response = ""
-
-        # Process the streaming response
-        for event in response_stream:
+    stream = response['body']
+    if stream:
+        for event in stream:
             chunk = event.get('chunk')
             if chunk:
                 chunk_obj = json.loads(chunk.get('bytes').decode())
@@ -108,9 +79,25 @@ if st.session_state.messages[-1]["role"] != "assistant":
                     delta_obj = chunk_obj.get('delta', None)
                     if delta_obj:
                         text = delta_obj.get('text', None)
-                        if text:
-                            full_response += text
-                            message_placeholder.markdown(full_response + "▌")
+                        yield text
 
+if prompt := st.chat_input():
+    st.session_state.show_animation = False
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message(
+        "user",
+        avatar="https://raw.githubusercontent.com/sahirmaharaj/exifa/main/img/user.gif",
+    ):
+        st.write(prompt)
+
+if st.session_state.messages[-1]["role"] != "assistant":
+    st.session_state.show_animation = False
+    with st.chat_message(
+        "user",
+        avatar="https://cdn.haitrieu.com/wp-content/uploads/2022/12/Icon-Dai-hoc-CMC.png",
+    ):
+        response = generate_response(prompt)
+        full_response = st.write_stream(response)
         message = {"role": "assistant", "content": full_response}
         st.session_state.messages.append(message)
+

@@ -37,7 +37,7 @@ if st.session_state.messages[-1]["role"] != "assistant":
     st.session_state.show_animation = False
 
     with st.chat_message(
-        "assistant",
+        "user",
         avatar="https://cdn.haitrieu.com/wp-content/uploads/2022/12/Icon-Dai-hoc-CMC.png",
     ):
         response = generate_response(prompt)
