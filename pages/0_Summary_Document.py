@@ -2,8 +2,13 @@ import streamlit as st
 import Libs as glib 
 from PyPDF2 import PdfReader
 import Libs as glib 
+import base
 
-st.set_page_config(page_title="Tóm tắt tài liệu")
+st.set_page_config(page_title="Tóm tắt tài liệu", page_icon="img/favicon.ico", layout="wide")
+st.title('Summary Document')
+
+base.init_slidebar()
+base.init_animation()
 
 uploaded_file = st.file_uploader("Tải tài liệu định dạng PDF")
 docs = []

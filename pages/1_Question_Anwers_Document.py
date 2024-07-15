@@ -3,8 +3,13 @@ import Libs as glib
 from PyPDF2 import PdfReader
 import Libs as glib 
 
+import base
 
-st.set_page_config(page_title="Hỏi đáp về tài liệu")
+st.set_page_config(page_title="Hỏi đáp về tài liệu", page_icon="img/favicon.ico", layout="wide")
+st.title('Question Anwers Document')
+
+base.init_slidebar()
+base.init_animation()
 
 uploaded_file = st.file_uploader("Tải tài liệu định dạng PDF để hỏi đáp")
 docs = []
