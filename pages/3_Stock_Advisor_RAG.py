@@ -18,10 +18,11 @@ st.set_page_config(page_title="CMC Stock Advisor", page_icon="img/favicon.ico", 
 def count_tokens(text):
     return len(anthropic.get_tokenizer().encode(text))
 
-st.markdown("<h3 style='text-align: center;'>RoboStock - Your 24/7 AI financial companion</h3>", unsafe_allow_html=True)
+st.markdown("<h4 style='text-align: center;'>RoboStock - Your 24/7 AI financial companion</h4>", unsafe_allow_html=True)
 
 base.init_home_state()
 base.init_slidebar()
+base.init_dialog()
 base.init_animation()
 
 clear_button = st.sidebar.button("Clear Conversation", key="clear")

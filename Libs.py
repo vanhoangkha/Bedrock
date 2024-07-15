@@ -43,9 +43,12 @@ def call_claude_sonet_stream(prompt):
         for event in stream:
             chunk = event.get('chunk')
             if chunk:
-                 delta = json.loads(chunk.get('bytes').decode()).get("delta")
-                 if delta:
-                     yield delta.get("text")    
+                chunk_obj = json.loads(chunk.get('bytes').decode())
+                if 'delta' in chunk_obj:
+                    delta_obj = chunk_obj.get('delta', None)
+                    if delta_obj:
+                        text = delta_obj.get('text', None)
+                        yield text
     
 def rewrite_document(input_text): 
     prompt = """Your name is good writer. You need to rewrite content: 
