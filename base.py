@@ -253,7 +253,7 @@ def init_dialog():
     with st.chat_message(message["role"], avatar=icons[message["role"]]):
         st.write(message["content"])
         if message == st.session_state["messages"][0]:
-            if st.button("How can I use CMCTS?"):
+            if st.button("Giới thiệu CMCTS?"):
                 show_video("https://www.youtube.com/watch?v=2mHuRiBr_ZQ")
                 
                 

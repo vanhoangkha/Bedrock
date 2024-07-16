@@ -6,7 +6,7 @@ import Libs as glib
 import base
 
 st.set_page_config(page_title="Hỏi đáp về tài liệu", page_icon="img/favicon.ico", layout="wide")
-st.title('Question Anwers Document')
+st.title('Hỏi đáp về tài liệu')
 
 base.init_slidebar()
 base.init_animation()

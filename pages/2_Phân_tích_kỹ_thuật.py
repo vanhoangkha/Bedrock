@@ -9,7 +9,7 @@ import pandas_datareader as pdr
 import base
 
 st.set_page_config(page_title="CMC Stock Analysis", page_icon="img/favicon.ico", layout="wide")
-st.title('Stock Analysis')
+st.title('Phân tích kỹ thuật cổ phiếu')
 
 base.init_slidebar()
 base.init_animation()

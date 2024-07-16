@@ -5,7 +5,7 @@ import Libs as glib
 import base
 
 st.set_page_config(page_title="Tóm tắt tài liệu", page_icon="img/favicon.ico", layout="wide")
-st.title('Summary Document')
+st.title('Tóm tắt tài liệu')
 
 base.init_slidebar()
 base.init_animation()

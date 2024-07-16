@@ -8,11 +8,13 @@ import base
 
 anthropic = Anthropic()
 
-knowledge_base_id=('EWVHJIY9AS'),
-modelId = "anthropic.claude-3-haiku-20240307-v1:0"
+#knowledge_base_id=('EWVHJIY9AS'),
+knowledge_base_id=('GDPSQICWNW'),
+#modelId = "anthropic.claude-3-haiku-20240307-v1:0"
+modelId = "anthropic.claude-3-5-sonnet-20240620-v1:0"
 
 st.set_page_config(page_title="CMC Stock Advisor", page_icon="img/favicon.ico", layout="wide")
-st.title('CMC Stock Advisor')
+st.title('Tư vấn chứng khoán')
 
 def count_tokens(text):
     return len(anthropic.get_tokenizer().encode(text))
@@ -22,7 +24,7 @@ base.init_slidebar()
 base.init_dialog()
 base.init_animation()
 
-clear_button = st.sidebar.button("Clear Conversation", key="clear")
+clear_button = st.sidebar.button("Xoá lịch sử chat", key="clear")
 if clear_button:
     base.clear_stock_advisor()
 
@@ -34,7 +36,7 @@ def generate_response(prompt):
         top_k = 3,
         retrieval_config = {
             "vectorSearchConfiguration": {
-                "numberOfResults": 3, 
+                "numberOfResults": 5, 
                 'overrideSearchType': "SEMANTIC"
             }
         }
