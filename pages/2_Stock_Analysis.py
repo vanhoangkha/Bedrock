@@ -9,8 +9,7 @@ import pandas_datareader as pdr
 import base
 
 st.set_page_config(page_title="CMC Stock Analysis", page_icon="img/favicon.ico", layout="wide")
-st.title('Technical Indicators')
-st.subheader('Moving Average')
+st.title('Stock Analysis')
 
 base.init_slidebar()
 base.init_animation()
@@ -22,7 +21,6 @@ ticker = st.sidebar.selectbox('Chọn mã chứng khoán', symbols)
 infoType = st.sidebar.radio("Chọn kiểu phân tích", ('PTKT', 'PTCB'))
 
 # price
-# st.title('Price')
 def get_stock_price(ticker, history=500):
     today = dt.datetime.today()
     start_date = today - dt.timedelta(days=history)
@@ -86,14 +84,22 @@ def forecast_price(question, docs):
     \n\nAssistant: """
     return call_claude_sonet_stream(prompt)
 
-stock = yf.Ticker(ticker)
-
+# stock = yf.Ticker(ticker)
 if(infoType == 'PTCB'):
     stock = yf.Ticker(ticker)
-    info = stock.info 
+    info = stock.info
+
+    # Extract and print specific fundamental information
+    # print(f"Company Name: {info.get('longName')}")
+    # print(f"Market Cap: {info.get('marketCap')}")
+    # print(f"Price-to-Earnings Ratio (P/E): {info.get('forwardPE')}")
+    # print(f"Earnings Per Share (EPS): {info.get('forwardEps')}")
+    # print(f"Sector: {info.get('sector')}")
+    # print(f"Industry: {info.get('industry')}")
+    # print(f"Website: {info.get('website')}")
+    
     if info:
-        print(info)
-        st.title('Company Profile')
+        st.subheader('Company Profile')
         st.subheader(info.get('name', '')) 
         st.markdown('** Sector **: ' + info.get('sector', ''))
         st.markdown('** Industry **: ' + info.get('industry', ''))
@@ -188,6 +194,8 @@ else:
         df["width"] = df["bolu"] - df["bold"]
         df.dropna(inplace=True)
         return df
+    
+    st.subheader('Moving Average')
     
     coMA1, coMA2 = st.columns(2)
     
