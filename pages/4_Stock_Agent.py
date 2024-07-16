@@ -2,6 +2,8 @@ from langchain_community.retrievers import AmazonKnowledgeBasesRetriever
 import streamlit as st
 from streamlit_chat import message
 import boto3
+from langchain_aws import ChatBedrock
+
 import json
 from anthropic import Anthropic
 import time
@@ -49,15 +51,13 @@ if 'total_cost' not in st.session_state:
     st.session_state['total_cost'] = 0.0
 
 model_name = "Claude-3-Haiku"
-modelId = "anthropic.claude-3-haiku-20240307-v1:0"
+#modelId = "anthropic.claude-3-haiku-20240307-v1:0"
+modelId = "anthropic.claude-3-5-sonnet-20240620-v1:0"
 
 # Sidebar
 st.sidebar.title("Sidebar")
 
 clear_button = st.sidebar.button("Clear Conversation", key="clear")
-model_name = "Claude-3-Haiku"
-modelId = "anthropic.claude-3-haiku-20240307-v1:0"
-# anthropic.claude-3-5-sonnet-20240620-v1:0
 # Reset everything
 if clear_button:
     st.session_state['generated'] = []
@@ -72,29 +72,37 @@ if clear_button:
     st.session_state['total_tokens'] = []
     #counter_placeholder.write(f"Total cost of this conversation: $${st.session_state['total_cost']:.5f}")
 def get_llm():      
-    model_kwargs_claude = {"temperature": 0.0, "top_p": .5, "max_tokens_to_sample": 2000}
-    llm = Bedrock(
-        credentials_profile_name=os.environ.get("BWB_PROFILE_NAME"), #sets the profile name to use for AWS credentials (if not the default)
-        region_name=os.environ.get("BWB_REGION_NAME"), #sets the region name (if not the default)
-        endpoint_url=os.environ.get("BWB_ENDPOINT_URL"), #sets the endpoint URL (if necessary)
-        model_id="anthropic.claude-v2", #set the foundation model
-        model_kwargs=model_kwargs_claude,
-        streaming=True)
 
+    # Configure the model to use
+    model_id = modelId
+    model_kwargs = {
+        "max_tokens": 2048,
+        "temperature": 0.2,
+        "top_k": 250,
+        "top_p": 1,
+        #"stop_sequences": ["\n\nHuman"],
+    }
+    bedrock_runtime = boto3.client(service_name="bedrock-runtime", region_name=os.environ.get("BWB_REGION_NAME"))
+    llm = ChatBedrock(
+        client=bedrock_runtime,
+        model_id=model_id,
+        model_kwargs=model_kwargs,
+        streaming = True
+    )
     return llm
 
 # Function to parse and validate response
 def parse_response(content):
   try:
       parsed_data = json.loads(content)
-      company_name = parsed_data.get('company_name', 'Unknown')
-      company_ticker = parsed_data.get('company_ticker', 'Unknown')
+      company_name = parsed_data[0].get('company_name', 'Unknown')
+      company_ticker = parsed_data[0].get('company_ticker', 'Unknown')
       return company_name, company_ticker
   except (json.JSONDecodeError, KeyError):
       return 'Unknown', 'Unknown'
 
 # Function to invoke Bedrock model
-def invoke_bedrock_model(prompt,max_tokens=1000):
+def invoke_bedrock_model(prompt,max_tokens=2000):
     bedrock_runtime = boto3.client('bedrock-runtime')
     request_body = {
       "anthropic_version": "bedrock-2023-05-31",
@@ -102,49 +110,87 @@ def invoke_bedrock_model(prompt,max_tokens=1000):
       "messages": [
           {"role": "user", "content": prompt}
       ],
-      "temperature": 0.1,
-      "top_p": 0.9,
+      "temperature": 0,
+      "top_p": 1,
     }
   
     response = bedrock_runtime.invoke_model(
-      modelId="anthropic.claude-3-haiku-20240307-v1:0",
+      modelId=modelId,
       contentType="application/json",
       accept="application/json",
       body=json.dumps(request_body)
     )
     response_body = json.loads(response['body'].read().decode())
     return response_body['content'][0]['text']
-def get_stock_ticker(input):
+def get_stock_ticker(question):
     # load company name & company tiker
     with open('tickers.csv', 'r') as file:
         company_data = file.read()        
 
-    initial_prompt = f"""You are a financial data assistant. Extract company name and company ticker from input. 
+    prompt = f"""You are an AI assistant designed to extract company ticker symbols and company names from user input. 
+            You have access to a comprehensive list of Vietnamese company tickers and their corresponding company names.
+            Instructions:
+            1. Carefully analyze the user's input.
+            2. Identify any mentions of company names or ticker symbols.
+            3. Cross-reference the identified information with your list of company tickers and names.
+            4. If a match is found, extract the company ticker and full company name.
+            5. If multiple companies are mentioned, focus on the most prominent or relevant one.
+            6. If no clear match is found, use your best judgment to infer the company based on context.
+            7. Format your response as a JSON object with the following keys:
+                - company_ticker: The ticker symbol of the identified company (in uppercase)
+                - company_name: The full name of the identified company
             Rules:
-            - Focus only on Vietnamese companies
-            - If given name, provide ticker
-            - If given ticker, provide name
-            - If both given, confirm them
-            - Use "None" for uncertain values
-            <context> Vietnamese company list: {json.dumps(company_data)} </context>
-            Input: {input}
-            Output: JSON with keys 'company_name' and 'company_ticker' only.
-            Respond with only the JSON object."""
-    initial_response = invoke_bedrock_model(initial_prompt)
+            - Always provide a response, even if you're not 100% certain.
+            - If you cannot identify a company, use "UNKNOWN" for both the ticker and name.
+            - Ensure the company_ticker is in uppercase letters.
+            - Provide the full, official company name for company_name.
 
+            Example user inputs and expected outputs:
+
+            Input: "Đánh gía cổ phiếu HPG?"
+            Output:
+            {{
+            "company_ticker": "HPG",
+            "company_name": "Công ty Cổ phần Tập đoàn Hòa Phát"
+            }}
+
+            Input: "Định giá cổ phiếu ngân hàng sài gòn thương tín"
+            Output:
+            {{
+            "company_ticker": "STB",
+            "company_name": "Ngân hàng Thương mại Cổ phần Sài Gòn Thương Tín"
+            }}
+
+            Input: "Phân tích tình hình tài chính công ty đầu tư xây dựng Kiên Giang"
+            Output:
+            {{
+            "company_ticker": "CKG",
+            "company_name": "Công ty Cổ phần Tập đoàn Tư vấn Đầu tư Xây dựng Kiên Giang"
+            }}
+
+            Input: "Đánh giá thị trường hiện tại?"
+            Output:
+            {{
+            "company_ticker": "UNKNOWN",
+            "company_name": "UNKNOWN"
+            }}
+
+            Remember to always format your response as a JSON object with the specified keys, regardless of the input or your level of certainty.
+            Additional Guidelines:
+            - Focus only on Vietnamese companies in the provided list
+            - Use the exact company name and ticker from the list - do not modify or paraphrase them
+            <context>
+            Vietnamese company list: {json.dumps(company_data)}
+            </context>
+
+            Input: {question}
+
+            Output: JSON array of objects with keys 'company_name' and 'company_ticker'.
+            Respond only with the JSON array. Do not include any explanations or additional text.
+        """
+    initial_response = invoke_bedrock_model(prompt)
     company_name, company_ticker = parse_response(initial_response)    
-    # load company data from file
-    
-    if company_name == 'None' or company_ticker == 'None':
-        context_prompt = f"""Given:
-            - Partial info: {{company_name: "{company_name}", company_ticker: "{company_ticker}"}}
-            - Vietnamese company list: {json.dumps(company_data)}
-            Task: Find the most likely Vietnamese company name and ticker. Use closest match if exact match unavailable for company name,
-            with company ticker use strict match.
-            Output JSON with 'company_name' and 'company_ticker'. Use "None" if unsure.
-            Respond with only the JSON object."""
-        context_response = invoke_bedrock_model(context_prompt)
-        company_name, company_ticker = parse_response(context_response)
+
     with open("company.json", 'w') as file:
         file.write(str(json.dumps({'company_name': company_name, 'company_ticker': company_ticker})))
 
@@ -153,10 +199,10 @@ def get_stock_ticker(input):
 # get stock history of the company in 3 years
 def get_stock_price(ticker, history=1000):
     with open("company.json", 'a') as file:
-        file.write('get stock price for ticker: {ticker}')
+        file.write(f'\nget stock price for ticker: {ticker}')
     today = date.today()
     start_date = today - timedelta(days=history)
-    stock = Vnstock().stock(symbol=ticker, source='VCI')
+    stock = Vnstock().stock(symbol=ticker.strip(), source='TCBS')
     data = stock.quote.history(start=start_date.strftime('%Y-%m-%d'),end=today.strftime('%Y-%m-%d'))
     return data
 
@@ -171,6 +217,7 @@ def safe_get_data(func, *args, **kwargs):
 # Function to get financial data
 def get_financial_data(ticker):
     # Create a stock object for financial data
+    ticker = ticker.strip().upper()
     stock_finance = Vnstock().stock(symbol=ticker, source='VCI')
     
     # Create a dictionary to store all dataframes
@@ -195,10 +242,12 @@ def get_financial_statements(ticker):
 def google_query(search_term):
     if "news" not in search_term:
         search_term=search_term+" stock news"
-    url=f"https://www.google.com/search?q={search_term}&cr=countryIN"
+    url=f"https://www.google.com/search?q={search_term}+tin+tức&hl=vi&tbm=nws"
     url=re.sub(r"\s","+",url)
     return url
 def get_recent_news(ticker):
+    ticker = ticker.strip().upper()
+
     # time.sleep(4) #To avoid rate limit error
     headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36'}
     company = Vnstock().stock(symbol=ticker.upper(), source='TCBS').company
@@ -225,6 +274,8 @@ def get_recent_news(ticker):
 
 def get_recent_stock_news(ticker):
     # get company name from ticker
+    ticker = ticker.strip().upper()
+
     company = Vnstock().stock(symbol=ticker, source='TCBS').company
     company_name = company.profile()['company_name'][0]
 
@@ -282,73 +333,102 @@ def initializeAgent():
     handle_parsing_errors=True,
     output_key="output",
 )
-    prompt = """
-        You are CRobo Advisor, an AI financial analyst assisting with stock analysis and market insights. Please follow these guidelines:
+    CURRENT_DATE = datetime.today().strftime("%Y-%m-%d")
+    prompt = f"""
+        You are CRobo Advisor, an AI-powered stock analysis and investment assistant. Y
+        our goal is to provide expert financial analysis and actionable insights in Vietnamese. Follow these guidelines:
 
-        1. Provide expert financial market analysis, focusing on clarity and accuracy.
-        2. Offer data-driven insights on market trends, stocks, and trading strategies.
-        3. Explain concepts clearly, adapting to the user's level of expertise.
-        4. When evaluating assets, provide detailed rationales for recommendations.
-        5. Base advice on up-to-date market information. For your reference, today's date is 2024 July 12.
-        6. Be transparent about uncertainties or limitations in your knowledge.
-        7. Respond in Vietnamese.
-        8. Tailor responses to each user's specific needs and questions.
-        9. Use Markdown formatting, with bold text for key points.
-        10. Utilize available tools for data gathering:
-            - get company ticker: Extract company name and ticker from user query. 
-            - get stock data: Retrieve stock information using company ticker. 
-            - get recent stock news: Fetch recent stock news using company ticker.
-            - get financial data: Obtain company financial data using company ticker. 
+        1. Expertise: Deliver in-depth financial market analysis, utilize technical analysis tools and indicators, 
+        and conduct quantitative analysis (e.g., DCF, P/E ratio, ROE).
 
-        When analyzing stocks, follow these steps:
-        1. Use "get company ticker" to identify the company name and company ticker.
-        2. Gather stock data with "get stock data", inputting the company ticker obtained in step 1.
-        3. Retrieve recent stock news using "get recent stock news", inputting the company ticker.
-        4. Obtain financial data with "get financial data", inputting the company ticker.
-        5. Provide a detailed analysis based on the collected information, including numerical data and reasoning to support your conclusions.
+        2. Data Presentation: Present numerical data and statistics clearly, using Markdown for clarity (e.g., **bold** for key points)
 
-        Format your response as follows:
-        Question: the input question you must answer
-        Thought: you should always think about what to do, also try to follow steps mentioned above
-        Action: the action to take, should be one of [get company ticker, get stock data, get recent stock news, get financial statements]
-        Action Input: the input to the action
-        Observation: the result of the action
-        (Repeat Thought/Action/Observation as needed, but no more than 3 times)
-        Thought: I now know the final answer
-        Final Answer: Comprehensive response to the user's question
-        Remember all the thoughts and responds are in Vietnamese.
-        Here is user's input.
+        3. Communication: Explain complex concepts clearly, translate technical terms into Vietnamese, 
+        and tailor responses to the user's level of expertise.
 
-        Question: {input}
-        Assistant: {agent_scratchpad}
-    """
+        4. Recommendations: Provide comprehensive lists with supporting data, 
+        explain why assets/strategies meet criteria, and include potential risks and limitations.
+
+        5. Market Insights: Analyze market structures and trading dynamics, use up-to-date market data, 
+        and focus on key insights and trends.
+
+        6. Transparency: Be clear about any uncertainties or limitations in your analysis.
+
+        7. Response Format: Interpret data, don't just repeat it. Balance comprehensive analysis with actionable information.
+
+        8. Time Awareness: Always consider the current date: {CURRENT_DATE}
+
+        Available Tools (these are external tools you can call):
+        - get company ticker: Extract company name and ticker
+        - get stock data: Retrieve stock information
+        - get recent stock news: Fetch recent stock news
+        - get financial data: Obtain company financial data
+
+        Analysis Steps:
+        1. Use "get company ticker" to identify company and ticker. Once you have this information, immediately proceed to step 2.
+        2. Use "get stock data" with the exact ticker obtained in step 1. After getting this data, move to step 3.
+        3. Use "get recent stock news" with the exact ticker from step 1. After obtaining news, proceed to step 4.
+        4. Use "get financial data" with the exact ticker from step 1. 
+        5. After completing steps 1-4, analyze all collected information to answer the user's query.
+
+        IMPORTANT: Follow this exact format for your response, ensuring you progress through all steps:
+
+        Question: [User's input question]
+        Thought: [Your reasoning about the current step, including what you've learned so far and what you need to do next]
+        Action: action to take, should be one of [get company ticker, get stock data, get recent stock news, get financial data]
+        Action Input: [Input for the chosen action]
+        Observation: [Result of the action]
+        Thought: [Analyze the result and determine the next step. If you have completed a step, explicitly state that you're moving to the next one.]
+        ... (Repeat Thought/Action/Action Input/Observation for each step, ensuring you progress through all four data gathering steps before final analysis)
+        Thought: I have gathered all necessary information and can now provide a final answer
+        Final Answer: [Your comprehensive response in Vietnamese]
+
+        Remember:
+        - You must progress through all four data gathering steps before providing a final answer.
+        - After getting the ticker, always verify it by explicitly stating: "Mã cổ phiếu được xác định: [TICKER]"
+        - Ensure you're passing the ticker exactly as received, without any modifications.
+        - If you encounter an error, report it precisely and attempt to proceed with the next step.
+        - Your final answer must synthesize information from all steps and be in Vietnamese.
+        - Prioritize accuracy and completeness over speed.
+        
+        Begin!
+        Question: {{input}}
+        Thought: {{agent_scratchpad}}
+""" 
+
     zero_shot_agent.agent.llm_chain.prompt.template=prompt
     return zero_shot_agent
 
-tools=[
+tools = [
     Tool(
         name="get company ticker",
         func=get_stock_ticker,
-        description="Get the company name and company stock ticker, input the use question to it"
+        description="Extract company name and ticker from the user's question. Input: user question. Output: company name and ticker."
     ),
     Tool(
         name="get stock data",
         func=get_stock_price,
-        description="Use when you are asked to evaluate or analyze a stock. This will output historic share price data. You should input the the company ticker to it "
+        description="Retrieve historical share price data for stock analysis. Input: EXACT company ticker. Output: historic share price data."
     ),
     Tool(
         name="get recent stock news",
         func=get_recent_stock_news,
-        description="Use this to fetch recent news about stocks"
+        description="Fetch recent news about the stock. Input: EXACT company ticker. Output: recent news articles related to the stock."
     ),
-
     Tool(
         name="get financial data",
         func=get_financial_data,
-        description="Use this to get balance sheet of the company. With the help of this data companys historic performance can be evaluaated. You should input company ticker to it"
-    ) 
- 
-
+        description="""Retrieve comprehensive financial data for a company. Input: EXACT company ticker. 
+                Output: A dictionary containing the following financial reports:
+                1. Balance Sheet (Yearly and Quarterly)
+                2. Income Statement (Yearly and Quarterly)
+                3. Cash Flow Statement (Yearly and Quarterly)
+                4. Financial Ratios (Yearly and Quarterly)
+                Each report is provided in English and includes both annual and quarterly data.
+                Use this data to conduct in-depth financial analysis, assess the company's financial health, 
+                track performance trends, and evaluate key financial metrics over time.
+        """
+    )
 ]
 
 zero_shot_agent = initializeAgent()
@@ -372,7 +452,16 @@ def generate_response(prompt,st_callback):
 # Containers
 response_container = st.container()
 container = st.container()
-
+# background
+page_bg_img = '''
+<style>
+.stApp  {
+background-image: url("https://img.freepik.com/premium-photo/generative-ai-composite-picture-data-analysis-interface_28914-25031.jpg");
+background-size: cover;
+}
+</style>
+'''
+#st.markdown(page_bg_img, unsafe_allow_html=True)
 with container:
     with st.form(key='my_form', clear_on_submit=True):
         user_input = st.text_area("You:", key='input', height=100)
