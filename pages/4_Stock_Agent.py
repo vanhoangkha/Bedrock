@@ -6,7 +6,6 @@ from langchain_aws import ChatBedrock
 
 import json
 from anthropic import Anthropic
-import time
 from langchain.prompts.chat import ChatPromptTemplate
 from langchain.llms.bedrock import Bedrock
 from langchain_community.chat_models import BedrockChat
@@ -19,18 +18,22 @@ from vnstock3 import Vnstock
 from bs4 import BeautifulSoup
 import re
 import requests
-
+from langchain.agents import initialize_agent, Tool
 from langchain.callbacks import StreamlitCallbackHandler
-
-anthropic = Anthropic()
-knowledge_base_id=("EWVHJIY9AS"),
-
-def count_tokens(text):
-    return len(anthropic.get_tokenizer().encode(text))
+import base
 
 # Setting page title and header
-st.set_page_config(page_title="CMC Stock Agent", page_icon=":robot_face:")
-st.markdown("<h1 style='text-align: center;'>RoboStock - Your 24/7 AI assistant</h1>", unsafe_allow_html=True)
+st.set_page_config(page_title="CMC Stock Agent", page_icon="img/favicon.ico", layout="wide")
+st.title('RoboStock - Your 24/7 AI assistant')
+
+base.init_slidebar()
+base.init_animation()
+
+anthropic = Anthropic()
+knowledge_base_id=("EWVHJIY9AS")
+
+model_name = "Claude-3-Haiku"
+modelId = "anthropic.claude-3-5-sonnet-20240620-v1:0"
 
 # Initialize session state variables
 if 'generated' not in st.session_state:
@@ -49,13 +52,9 @@ if 'total_tokens' not in st.session_state:
     st.session_state['total_tokens'] = []
 if 'total_cost' not in st.session_state:
     st.session_state['total_cost'] = 0.0
-
-model_name = "Claude-3-Haiku"
-#modelId = "anthropic.claude-3-haiku-20240307-v1:0"
-modelId = "anthropic.claude-3-5-sonnet-20240620-v1:0"
-
-# Sidebar
-st.sidebar.title("Sidebar")
+    
+def count_tokens(text):
+    return len(anthropic.get_tokenizer().encode(text))
 
 clear_button = st.sidebar.button("Clear Conversation", key="clear")
 # Reset everything
@@ -71,8 +70,8 @@ if clear_button:
     st.session_state['total_cost'] = 0.0
     st.session_state['total_tokens'] = []
     #counter_placeholder.write(f"Total cost of this conversation: $${st.session_state['total_cost']:.5f}")
+    
 def get_llm():      
-
     # Configure the model to use
     model_id = modelId
     model_kwargs = {
@@ -122,6 +121,7 @@ def invoke_bedrock_model(prompt,max_tokens=2000):
     )
     response_body = json.loads(response['body'].read().decode())
     return response_body['content'][0]['text']
+
 def get_stock_ticker(question):
     # load company name & company tiker
     with open('tickers.csv', 'r') as file:
@@ -245,6 +245,7 @@ def google_query(search_term):
     url=f"https://www.google.com/search?q={search_term}+tin+tức&hl=vi&tbm=nws"
     url=re.sub(r"\s","+",url)
     return url
+
 def get_recent_news(ticker):
     ticker = ticker.strip().upper()
 
@@ -318,10 +319,6 @@ def get_article_content(url):
     except Exception as e:
         return f"Could not retrieve content: {e}"
 
-
-from langchain.agents import load_tools
-from langchain.agents import initialize_agent, Tool
-from langchain.agents import AgentType
 def initializeAgent():
     zero_shot_agent=initialize_agent(
     llm=get_llm(),
@@ -461,6 +458,7 @@ background-size: cover;
 }
 </style>
 '''
+
 #st.markdown(page_bg_img, unsafe_allow_html=True)
 with container:
     with st.form(key='my_form', clear_on_submit=True):
@@ -471,5 +469,3 @@ with container:
         st_callback = StreamlitCallbackHandler(st.container())
         response_stream, query = generate_response(user_input,st_callback)
         st.session_state['past'].append(user_input)
-        
- 

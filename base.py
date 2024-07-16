@@ -49,13 +49,13 @@ particles_js = """<!DOCTYPE html>
           }
         },
         "color": {
-          "value": "#ffffff"
+          "value": "#000000"
         },
         "shape": {
           "type": "circle",
           "stroke": {
             "width": 0,
-            "color": "#000000"
+            "color": "#ffffff"
           },
           "polygon": {
             "nb_sides": 5
@@ -89,7 +89,7 @@ particles_js = """<!DOCTYPE html>
         "line_linked": {
           "enable": true,
           "distance": 100,
-          "color": "#ffffff",
+          "color": "#000000",
           "opacity": 0.22,
           "width": 1
         },
@@ -264,7 +264,7 @@ def right_message(st, message):
             <div style="text-align: right;">
                 {message}
             </div>
-            <img src="https://raw.githubusercontent.com/sahirmaharaj/exifa/main/img/user.gif" alt="avatar" style="width: 40px; height: 40px; border-radius: 50%; margin-left: 10px;">
+            <img src="https://raw.githubusercontent.com/sahirmaharaj/exifa/main/img/user.gif" alt="avatar" style="height: 40px; border-radius: 50%; margin-left: 10px;">
         </div>
         """,
         unsafe_allow_html=True
