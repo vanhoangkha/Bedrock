@@ -1,4 +1,4 @@
-FROM python:3.10-slim as base
+FROM python:3.10-slim AS base
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 
-FROM base as dependencies
+FROM base AS dependencies
 
 COPY requirements.txt ./app
 
@@ -20,7 +20,7 @@ RUN pip install --upgrade pip
 RUN pip --version
 RUN pip install -r requirements.txt
 
-FROM dependencies as deploy
+FROM dependencies AS deploy
 
 COPY . /app
 
