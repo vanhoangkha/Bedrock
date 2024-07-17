@@ -11,7 +11,8 @@ Setup <a href='https://docs.python-guide.org/starting/install3/linux/' target='_
 Setup <a href='https://docs.python-guide.org/starting/install3/linux/' target='_blank'> Python Env<br />
 Setup <a href='https://docs.aws.amazon.com/cli/latest/userguide/getting-started-quickstart.html' target='_blank'> AWS CLI<br />
 > git clone https://github.com/nguyendinhthi0705/Study-Assistant.git <br />
-> cd Study-Assistant <br />
+> git pull <br />
+> cd stock-assistant <br />
 > pip3 install -r requirements.txt <br />
 > streamlit run main.py --server.port 8501 <br />
 
@@ -40,3 +41,8 @@ Setup <a href='https://docs.aws.amazon.com/cli/latest/userguide/getting-started-
 [![Suggest Better Writing](http://img.youtube.com/vi/7xBR5rtcp30/0.jpg)](https://www.youtube.com/watch?v=7xBR5rtcp30)]
 
 
+## Docker
+```
+    git pull
+    docker compose up -d
+```
