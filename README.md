@@ -1,4 +1,4 @@
-# Overview Study-Assistant
+# Overview Stock-Assistant
 This is a simple demo of Amazon Bedrock and Anthropic Claude 3 Sonnet model with langchain and streamlit. For more detail please reference the following link: <br />
 - <a href="https://aws.amazon.com/bedrock/" target="_blank">https://aws.amazon.com/bedrock/ </a>
 - <a href="https://www.anthropic.com/news/claude-3-family" target="_blank">Claude 3 </a>
@@ -10,7 +10,7 @@ This is a simple demo of Amazon Bedrock and Anthropic Claude 3 Sonnet model with
 Setup <a href='https://docs.python-guide.org/starting/install3/linux/' target='_blank'> Python <a><br />
 Setup <a href='https://docs.python-guide.org/starting/install3/linux/' target='_blank'> Python Env<br />
 Setup <a href='https://docs.aws.amazon.com/cli/latest/userguide/getting-started-quickstart.html' target='_blank'> AWS CLI<br />
-> git clone https://github.com/nguyendinhthi0705/Study-Assistant.git <br />
+> git clone<br />
 > git pull <br />
 > cd stock-assistant <br />
 > pip3 install -r requirements.txt <br />
