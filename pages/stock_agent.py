@@ -209,78 +209,56 @@ def google_query(search_term):
     url=re.sub(r"\s","+",url)
     return url
 
-def get_recent_news(ticker):
-    ticker = ticker.strip().upper()
-
-    # time.sleep(4) #To avoid rate limit error
-    headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36'}
-    company = Vnstock().stock(symbol=ticker.upper(), source='TCBS').company
-    company_name = company.profile()['company_name'][0]
-    g_query=google_query(company_name)
-    res=requests.get(g_query,headers=headers).text
-    soup=BeautifulSoup(res,"html.parser")
-    news=[]
-    for n in soup.find_all("div","n0jPhd ynAwRc tNxQIb nDgy9d"):
-        news.append(n.text)
-    for n in soup.find_all("div","IJl0Z"):
-        news.append(n.text)
-
-    if len(news)>6:
-        news=news[:4]
-    else:
-        news=news
-    news_string=""
-    for i,n in enumerate(news):
-        news_string+=f"{i}. {n}\n"
-    top5_news="Recent News:\n\n"+news_string
-    
-    return top5_news
 
 def get_recent_stock_news(ticker):
     # get company name from ticker
     ticker = ticker.strip().upper()
+    articles = fetch_news(ticker)
+    content = []
+    for article in articles:
+        content.append({'summary': article['summary'], 'content':fetch_article_content(article['link'])})
+    return content
 
-    company = Vnstock().stock(symbol=ticker, source='TCBS').company
-    company_name = company.profile()['company_name'][0]
-
-    # Define the Google News search URL in Vietnamese
-    search_url = f"https://www.google.com/search?q={company_name}+tin+tức&hl=vi&tbm=nws"
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-    }  
-    # Send a GET request to the search URL
-    response = requests.get(search_url,headers=headers)
-    #response.raise_for_status()  # Check for request errors
-    
-    # Parse the HTML content of the response
+#search for news and scrap 5 recent news
+def fetch_news(query):
+    base_url = "https://cafef.vn/tim-kiem.chn"
+    # Configure the request parameters
+    params = {'keywords': query}
+    # Make the request
+    response = requests.get(base_url, params=params)
+    response.raise_for_status()  # Ensure the request was successful
+    # Parse the HTML content
     soup = BeautifulSoup(response.text, 'html.parser')
-    
-    # Find all news article elements
-    articles = soup.find_all('div', class_='BVG0Nb')
-    
-    # Extract and print the titles, URLs, and content of the articles
-    content =""
-    for article in articles[:5]:
-        title = article.find('div', class_='mCBkyc').text
-        link = article.find('a')['href']
-        print(f"Title: {title}")
-        print(f"Link: {link}")
-        
-        # Get the content of the news article
-        content+= '\n\n' + get_article_content(link)
-    return "Recent News:\n\n" + content
+    # Find the container with the news items
+    news_container = soup.find('div', class_='list-section list-event')
+    news_items = news_container.find_all('div', class_='item')
+    # List to hold news data
+    articles = []
+    # Loop through each news item
+    for item in news_items:
+        title_element = item.find('h3', class_='titlehidden').find('a')
+        title = title_element.text.strip()
+        link = 'https://cafef.vn' + title_element['href']
+        summary = item.find('p', class_='sapo').text.strip() if item.find('p', class_='sapo') else 'No summary available'
+        # Append news info to the list
+        articles.append({'link': link, 'summary': summary})
+    return articles[:5]
 
-def get_article_content(url):
-    try:
-        response = requests.get(url)
-        #response.raise_for_status()  # Check for request errors      
-        soup = BeautifulSoup(response.text, 'html.parser')        
-        # Extract the article text based on common tags (this may need adjustment)
-        paragraphs = soup.find_all('p')
-        content = ' '.join([p.text for p in paragraphs])       
-        return content
-    except Exception as e:
-        return f"Could not retrieve content: {e}"
+# fetch article content from link
+def fetch_article_content(url):
+    # Send a GET request to the URL
+    response = requests.get(url)
+    response.raise_for_status()  # Ensure the request was successful
+    # Parse the HTML content
+    soup = BeautifulSoup(response.text, 'html.parser')
+    # Find the specific container holding the main content
+    content_div = soup.find('div', class_='detail-content afcbc-body')
+    if not content_div:
+        return "Content not found"
+    # Extract all paragraph texts within the container
+    paragraphs = content_div.find_all('p')
+    main_content = "\n".join(p.text.strip() for p in paragraphs)
+    return main_content
 
 def initializeAgent():
     
@@ -376,7 +354,7 @@ tools = [
     Tool(
         name="get recent stock news",
         func=get_recent_stock_news,
-        description="Fetch recent news about the stock. Input: EXACT company ticker. Output: recent news articles related to the stock."
+        description="Fetch recent news about the stock. Input: EXACT company ticker. Output: list ofrecent news articles in json format with keys is summary,and content."
     ),
     Tool(
         name="get financial data",
