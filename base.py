@@ -165,6 +165,7 @@ welcome_messages = [
     "Chào! Tôi là CMCTS, trợ lý AI thông minh giúp hiểu metadata hình ảnh. Bạn muốn khám phá gì?",
     "Hey! Tôi là CMCTS, trợ lý AI giải thích dữ liệu CMCTS. Tôi có thể giúp gì hôm nay?",
 ]
+
 message = random.choice(welcome_messages)
 
 system_prompt = """
