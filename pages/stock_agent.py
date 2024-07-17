@@ -442,16 +442,20 @@ def generate_response(prompt,st_callback):
         )
     return response.get('body'), prompt
 
-# Containers
-response_container = st.container()
-container = st.container()
+if prompt := st.chat_input():
+    st.session_state.show_animation = False
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    base.right_message(st, prompt)
 
-with container:
-    with st.form(key='my_form', clear_on_submit=True):
-        user_input = st.text_area("You:", key='input', height=100)
-        submit_button = st.form_submit_button(label='Send')
-
-    if submit_button and user_input:
-        st_callback = StreamlitCallbackHandler(st.container())
-        response_stream, query = generate_response(user_input,st_callback)
-        st.session_state['past'].append(user_input)
+if st.session_state.messages[-1]["role"] != "assistant":
+    st.session_state.show_animation = False
+    if prompt:
+        chat_message = st.chat_message(
+            "user",
+            avatar="https://cdn.haitrieu.com/wp-content/uploads/2022/12/Icon-Dai-hoc-CMC.png",
+        )
+        st_callback = StreamlitCallbackHandler(chat_message)
+        response = generate_response(prompt, st_callback)
+        full_response = st.write_stream(response)
+        message = {"role": "assistant", "content": full_response}
+        st.session_state.messages.append(message)
