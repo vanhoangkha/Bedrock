@@ -215,7 +215,7 @@ def init_slidebar():
       st.markdown(
           f"""
           <div style='display: flex; align-items: center;'>
-              <img src='{image_url}' style='background-color: rgb(255,255,255,0.9); height: 64px; padding: 10px; margin-right: 10px;'>
+              <img src='{image_url}' style='height: 96px; padding: 10px; margin-right: 10px;'>
               <h1 style='margin: 0;'>CMCTS</h1>
           </div>
           """,

@@ -1,7 +1,7 @@
 import streamlit as st 
-import Libs as glib 
+import libs as glib 
 from PyPDF2 import PdfReader
-import Libs as glib 
+import libs as glib 
 import base
 
 st.set_page_config(page_title="Tóm tắt tài liệu", page_icon="img/favicon.ico", layout="wide")

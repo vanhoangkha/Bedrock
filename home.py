@@ -1,6 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as components
-import Libs as glib 
+import libs as glib 
 import base
 
 def generate_response(prompt):
