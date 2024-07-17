@@ -182,12 +182,23 @@ system_prompt = """
     """
 
 def init_home_state(_message): 
-  # if "messages" not in st.session_state:
-  st.session_state["messages"] = [{"role": "assistant", "content": _message if _message else message }]
+  if "messages" not in st.session_state:
+    st.session_state["messages"] = [{"role": "assistant", "content": message}]
+  if "exif_df" not in st.session_state:
+      st.session_state["exif_df"] = pd.DataFrame()
+  if "url_exif_df" not in st.session_state:
+      st.session_state["url_exif_df"] = pd.DataFrame()
+  if "show_expanders" not in st.session_state:
+      st.session_state.show_expanders = True
   if "reset_trigger" not in st.session_state:
       st.session_state.reset_trigger = False
+  if "image_url" not in st.session_state:
+      st.session_state["image_url"] = ""
+  if "follow_up" not in st.session_state:
+      st.session_state.follow_up = False
   if "show_animation" not in st.session_state:
       st.session_state.show_animation = True
+
 
 def init_stock_advisor(): 
   if "messages" not in st.session_state:
@@ -276,10 +287,19 @@ def right_message(st, message):
     )
 
 def clear_chat_history():
+
     st.session_state.reset_trigger = not st.session_state.reset_trigger
+    st.session_state.show_expanders = True
+
     st.session_state.show_animation = True
+
     st.session_state.messages = [{"role": "assistant", "content": message}]
+
+    st.session_state["exif_df"] = pd.DataFrame()
+    st.session_state["url_exif_df"] = pd.DataFrame()
+
     st.cache_data.clear()
+
     st.success("Chat History Cleared!")
 
 def clear_stock_advisor():
