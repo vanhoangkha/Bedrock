@@ -99,7 +99,7 @@ if(infoType == 'PTCB'):
     # print(f"Website: {info.get('website')}")
 
     # translate summary to Vietnamese
-    prompt = """Human: Summarize this content into no more than 100 words and translate into Vietnamese, return only vietnamese text:
+    prompt = """Human: Summarize this content into no more than 100 words and translate into Vietnamese, return only vietnamese text of the question:
         Question: """ + str(info.get('longBusinessSummary', '')) + """
         
         \n\nAssistant: """
