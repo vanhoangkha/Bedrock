@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.10-slim as base
 
 WORKDIR /app
 
@@ -9,13 +9,20 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-COPY . /app
+
+FROM base as dependencies
+
+COPY requirements.txt ./app
 
 RUN python --version
 RUN pip --version
 RUN pip install --upgrade pip
 RUN pip --version
 RUN pip install -r requirements.txt
+
+FROM dependencies as deploy
+
+COPY . /app
 
 EXPOSE 8501
 
