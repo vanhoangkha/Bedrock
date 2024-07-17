@@ -31,6 +31,10 @@ COPY --from=build /usr/local/lib/python3.10/site-packages /usr/local/lib/python3
 COPY --from=build /usr/local/bin/streamlit /usr/local/bin/streamlit
 COPY . /app
 
+ENV AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+
 EXPOSE 8501
 
 HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health

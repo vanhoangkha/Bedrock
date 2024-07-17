@@ -46,3 +46,11 @@ Setup <a href='https://docs.aws.amazon.com/cli/latest/userguide/getting-started-
     git pull
     docker compose up -d
 ```
+
+## Environment
+create ```.env``` file
+```
+    AWS_DEFAULT_REGION=us-west-1
+    AWS_ACCESS_KEY_ID=your_access_key
+    AWS_SECRET_ACCESS_KEY=your_secret_key
+```
