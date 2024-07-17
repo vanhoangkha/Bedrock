@@ -283,16 +283,18 @@ def get_article_content(url):
         return f"Could not retrieve content: {e}"
 
 def initializeAgent():
-    zero_shot_agent=initialize_agent(
-    llm=get_llm(),
-    agent="zero-shot-react-description",
-    tools=tools,
-    verbose=True,
-    max_iteration=4,
-    return_intermediate_steps=True,
-    handle_parsing_errors=True,
-    output_key="output",
-)
+    
+    zero_shot_agent = initialize_agent(
+        llm=get_llm(),
+        agent="zero-shot-react-description",
+        tools=tools,
+        verbose=True,
+        max_iteration=4,
+        return_intermediate_steps=True,
+        handle_parsing_errors=True,
+        output_key="output",
+    )
+    
     CURRENT_DATE = datetime.today().strftime("%Y-%m-%d")
     prompt = f"""
         You are CRobo Advisor, an AI-powered stock analysis and investment assistant. Y
@@ -357,6 +359,7 @@ def initializeAgent():
 """ 
 
     zero_shot_agent.agent.llm_chain.prompt.template=prompt
+    
     return zero_shot_agent
 
 tools = [
@@ -392,51 +395,49 @@ tools = [
 ]
 
 zero_shot_agent = initializeAgent()
+
 if 'chat_history' not in st.session_state: 
     st.session_state.chat_history = [] 
 
-def generate_response(prompt,st_callback):
-    # Initialize the session state for messages if it doesn't exist
-    if 'messages' not in st.session_state:
-        st.session_state['messages'] = []
-    st.session_state['messages'].append({"role": "user", "content": prompt})
-
-    response = zero_shot_agent({
+def generate_response(prompt, st_callback):
+    
+    response = zero_shot_agent(
+        {
             "input": prompt,
             "chat_history": st.session_state.chat_history,
          },
          callbacks=[st_callback]
-        )
+    )
     return response.get('body'), prompt
 
-
 # Containers
-response_container = st.container()
-container = st.container()
+# response_container = st.container()
+# container = st.container()
 
-with container:
-    with st.form(key='my_form', clear_on_submit=True):
-        user_input = st.text_area("You:", key='input', height=100)
-        submit_button = st.form_submit_button(label='Send')
+# with container:
+#     with st.form(key='my_form', clear_on_submit=True):
+#         user_input = st.text_area("You:", key='input', height=100)
+#         submit_button = st.form_submit_button(label='Send')
 
-    if submit_button and user_input:
-        st_callback = StreamlitCallbackHandler(st.container())
-        response_stream, query = generate_response(user_input,st_callback)
+#     if submit_button and user_input:
+#         st_callback = StreamlitCallbackHandler(st.container())
+#         response_stream, query = generate_response(user_input,st_callback)
 
-# if prompt := st.chat_input():
-#     st.session_state.show_animation = False
-#     st.session_state.messages.append({"role": "user", "content": prompt})
-#     base.right_message(st, prompt)
+if prompt := st.chat_input():
+    st.session_state.show_animation = False
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    base.right_message(st, prompt)
 
-# if st.session_state.messages[-1]["role"] != "assistant":
-#     st.session_state.show_animation = False
-#     if prompt:
-#         chat_message = st.chat_message(
-#             "user",
-#             avatar="https://cdn.haitrieu.com/wp-content/uploads/2022/12/Icon-Dai-hoc-CMC.png",
-#         )
-#         st_callback = StreamlitCallbackHandler(chat_message)
-#         response = generate_response(prompt, st_callback)
-#         full_response = st.write_stream(response)
-#         message = {"role": "assistant", "content": full_response}
-#         st.session_state.messages.append(message)
+if st.session_state.messages[-1]["role"] != "assistant":
+    st.session_state.show_animation = False
+    if prompt:
+        with st.chat_message(
+            "user",
+            avatar="img/cmc.png",
+        ) as chat:
+            st_callback = StreamlitCallbackHandler(st)
+            response, query = generate_response(prompt, st_callback)
+            # full_response = st.write_stream(query)
+            message = {"role": "assistant", "content": query}
+            st.session_state.messages.append(message)
+     

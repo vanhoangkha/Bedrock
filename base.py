@@ -5,7 +5,7 @@ import streamlit.components.v1 as components
 import random
 
 icons = {
-    "assistant": "https://cdn.haitrieu.com/wp-content/uploads/2022/12/Icon-Dai-hoc-CMC.png",
+    "assistant": "img/cmc.png",
     "user": "https://raw.githubusercontent.com/sahirmaharaj/exifa/2f685de7dffb583f2b2a89cb8ee8bc27bf5b1a40/img/user-done.svg",
 }
 
@@ -218,7 +218,6 @@ def init_stock_advisor():
 
 def init_slidebar():
   with st.sidebar:
-      # st.sidebar.image("img/cmc.webp")
       image_url = (
           "https://cdn.haitrieu.com/wp-content/uploads/2022/12/Icon-Dai-hoc-CMC.png"
       )
