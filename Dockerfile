@@ -13,8 +13,11 @@ RUN apt-get update && apt-get install -y \
 
 COPY . /app
 
+RUN python --version
+RUN pip --version
 RUN pip install --upgrade pip
-RUN pip3 install -r requirements.txt
+RUN pip --version
+RUN pip install -r requirements.txt
 
 EXPOSE 8501
 
