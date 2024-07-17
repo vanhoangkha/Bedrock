@@ -155,17 +155,18 @@ particles_js = """<!DOCTYPE html>
 """
 
 welcome_messages = [
-    "Hello! I'm CMCTS, an AI assistant designed to make image metadata meaningful. Ask me anything!",
-    "Hi! I'm CMCTS, an AI-powered assistant for extracting and explaining CMCTS data. How can I help you today?",
-    "Hey! I'm CMCTS, your AI-powered guide to understanding the metadata in your images. What would you like to explore?",
-    "Hi there! I'm CMCTS, an AI-powered tool built to help you make sense of your image metadata. How can I help you today?",
-    "Hello! I'm CMCTS, an AI-driven tool designed to help you understand your images' metadata. What can I do for you?",
-    "Hi! I'm CMCTS, an AI-driven assistant designed to make CMCTS data easy to understand. How can I help you today?",
-    "Welcome! I'm CMCTS, an intelligent AI-powered tool for extracting and explaining CMCTS data. How can I assist you today?",
-    "Hello! I'm CMCTS, your AI-powered guide for understanding image metadata. Ask me anything!",
-    "Hi! I'm CMCTS, an intelligent AI assistant ready to help you understand your images' metadata. What would you like to explore?",
-    "Hey! I'm CMCTS, an AI assistant for extracting and explaining CMCTS data. How can I help you today?",
+    "Xin chào! Tôi là CMCTS, một trợ lý AI được thiết kế để làm cho siêu dữ liệu hình ảnh trở nên ý nghĩa. Hãy hỏi tôi bất cứ điều gì!",
+    "Chào bạn! Tôi là CMCTS, một trợ lý AI được thiết kế để trích xuất và giải thích dữ liệu CMCTS. Hôm nay tôi có thể giúp gì cho bạn?",
+    "Xin chào! Tôi là CMCTS, hướng dẫn AI của bạn để hiểu siêu dữ liệu trong hình ảnh của bạn. Bạn muốn khám phá gì?",
+    "Xin chào! Tôi là CMCTS, một công cụ AI được xây dựng để giúp bạn hiểu siêu dữ liệu hình ảnh. Tôi có thể giúp gì cho bạn hôm nay?",
+    "Xin chào! Tôi là CMCTS, một công cụ AI được thiết kế để giúp bạn hiểu siêu dữ liệu của hình ảnh. Tôi có thể làm gì cho bạn?",
+    "Chào bạn! Tôi là CMCTS, một trợ lý AI được thiết kế để làm cho dữ liệu CMCTS dễ hiểu. Hôm nay tôi có thể giúp gì cho bạn?",
+    "Chào mừng! Tôi là CMCTS, một công cụ AI thông minh để trích xuất và giải thích dữ liệu CMCTS. Tôi có thể hỗ trợ bạn hôm nay?",
+    "Xin chào! Tôi là CMCTS, hướng dẫn AI của bạn để hiểu siêu dữ liệu hình ảnh. Hãy hỏi tôi bất cứ điều gì!",
+    "Chào bạn! Tôi là CMCTS, một trợ lý AI thông minh sẵn sàng giúp bạn hiểu siêu dữ liệu của hình ảnh. Bạn muốn khám phá gì?",
+    "Xin chào! Tôi là CMCTS, một trợ lý AI để trích xuất và giải thích dữ liệu CMCTS. Hôm nay tôi có thể giúp gì cho bạn?",
 ]
+
 message = random.choice(welcome_messages)
 
 system_prompt = """
