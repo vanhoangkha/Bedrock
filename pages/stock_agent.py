@@ -28,44 +28,11 @@ base.init_animation()
 anthropic = Anthropic()
 knowledge_base_id=("EWVHJIY9AS")
 
-model_name = "Claude-3-Haiku"
 modelId = "anthropic.claude-3-5-sonnet-20240620-v1:0"
 
-# Initialize session state variables
-if 'generated' not in st.session_state:
-    st.session_state['generated'] = []
-if 'past' not in st.session_state:
-    st.session_state['past'] = []
-if 'messages' not in st.session_state:
-    st.session_state['messages'] = [
-        {"role": "system", "content": "You are a helpful assistant."}
-    ]
-if 'model_name' not in st.session_state:
-    st.session_state['model_name'] = []
-if 'cost' not in st.session_state:
-    st.session_state['cost'] = []
-if 'total_tokens' not in st.session_state:
-    st.session_state['total_tokens'] = []
-if 'total_cost' not in st.session_state:
-    st.session_state['total_cost'] = 0.0
-    
-def count_tokens(text):
-    return len(anthropic.get_tokenizer().encode(text))
-
 clear_button = st.sidebar.button("Xoá lịch sử chat", key="clear")
-# Reset everything
 if clear_button:
-    st.session_state['generated'] = []
-    st.session_state['past'] = []
-    st.session_state['messages'] = [
-        {"role": "system", "content": "You are a helpful assistant."}
-    ]
-    st.session_state['number_tokens'] = []
-    st.session_state['model_name'] = []
-    st.session_state['cost'] = []
-    st.session_state['total_cost'] = 0.0
-    st.session_state['total_tokens'] = []
-    #counter_placeholder.write(f"Total cost of this conversation: $${st.session_state['total_cost']:.5f}")
+    base.clear_chat_history()
     
 def get_llm():      
     # Configure the model to use
@@ -455,7 +422,6 @@ with container:
     if submit_button and user_input:
         st_callback = StreamlitCallbackHandler(st.container())
         response_stream, query = generate_response(user_input,st_callback)
-        st.session_state['past'].append(user_input)
 
 # if prompt := st.chat_input():
 #     st.session_state.show_animation = False

@@ -287,28 +287,20 @@ def right_message(st, message):
     )
 
 def clear_chat_history():
-
     st.session_state.reset_trigger = not st.session_state.reset_trigger
     st.session_state.show_expanders = True
-
     st.session_state.show_animation = True
-
     st.session_state.messages = [{"role": "assistant", "content": message}]
-
     st.session_state["exif_df"] = pd.DataFrame()
     st.session_state["url_exif_df"] = pd.DataFrame()
-
     st.cache_data.clear()
-
     st.success("Chat History Cleared!")
 
 def clear_stock_advisor():
     st.session_state.show_animation = True
     st.session_state['generated'] = []
     st.session_state['past'] = []
-    st.session_state['messages'] = [
-        {"role": "system", "content": "You are a helpful assistant."}
-    ]
+    st.session_state.messages = [{"role": "assistant", "content": message}]
     st.session_state['number_tokens'] = []
     st.session_state['model_name'] = []
     st.session_state['cost'] = []
