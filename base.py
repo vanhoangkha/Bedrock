@@ -245,6 +245,12 @@ def init_slidebar():
           """,
           unsafe_allow_html=True,
       )
+      
+      st.sidebar.button(
+          "🗑 Clear Chat History",
+          on_click=clear_chat_history,
+          key="sidebar_clear_chat_history",
+      )
 
 def init_animation():
   if 'reset_trigger' not in st.session_state:

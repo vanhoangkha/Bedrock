@@ -17,7 +17,7 @@ Setup <a href='https://docs.aws.amazon.com/cli/latest/userguide/getting-started-
 > streamlit run main.py --server.port 8501 <br />
 
 # Architecture
-![Architecture](./Architecture.png)
+![Architecture](./architecture.png)
 
 # Learn more about prompt and Claude 3
 <a href="https://docs.anthropic.com/claude/docs/introduction-to-prompt-design" target="_blank">Introduction to prompt design </a>

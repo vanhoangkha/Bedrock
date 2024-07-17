@@ -29,10 +29,6 @@ anthropic = Anthropic()
 knowledge_base_id=("EWVHJIY9AS")
 
 modelId = "anthropic.claude-3-5-sonnet-20240620-v1:0"
-
-clear_button = st.sidebar.button("Xoá lịch sử chat", key="clear")
-if clear_button:
-    base.clear_chat_history()
     
 def get_llm():      
     # Configure the model to use

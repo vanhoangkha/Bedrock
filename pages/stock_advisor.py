@@ -24,9 +24,6 @@ base.init_slidebar()
 base.init_dialog()
 base.init_animation()
 
-clear_button = st.sidebar.button("Xoá lịch sử chat", key="clear")
-if clear_button:
-    base.clear_chat_history()
 
 def generate_response(prompt):
     bedrock = boto3.client(service_name="bedrock-runtime")  

@@ -7,7 +7,7 @@ def generate_response(prompt):
     if base.get_num_tokens(prompt) >= 1000000:
         st.error("Conversation length too long. Please keep it under 1000000 tokens.")
         st.button(
-            "🗑 Clear Chat History",
+            "🗑 Xóa lịch sử chát",
             on_click=base.clear_chat_history,
             key="clear_chat_history",
         )
