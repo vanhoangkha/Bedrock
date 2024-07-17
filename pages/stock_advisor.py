@@ -14,6 +14,21 @@ knowledge_base_id=('GDPSQICWNW'),
 modelId = "anthropic.claude-3-5-sonnet-20240620-v1:0"
 
 st.set_page_config(page_title="Tra cứu thông tin chứng khoán", page_icon="img/favicon.ico", layout="wide")
+st.markdown(
+  """
+    <style>
+        .reportview-container {
+            margin-top: -2em;
+        }
+        #MainMenu {visibility: hidden;}
+        .stDeployButton {display:none;}
+        footer {visibility: hidden;}
+        #stDecoration {display:none;}
+    </style>
+  """, 
+  unsafe_allow_html=True
+)
+
 st.title('Tra cứu thông tin chứng khoán')
 
 def count_tokens(text):

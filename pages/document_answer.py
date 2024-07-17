@@ -6,6 +6,21 @@ import libs as glib
 import base
 
 st.set_page_config(page_title="Hỏi đáp về tài liệu", page_icon="img/favicon.ico", layout="wide")
+st.markdown(
+  """
+    <style>
+        .reportview-container {
+            margin-top: -2em;
+        }
+        #MainMenu {visibility: hidden;}
+        .stDeployButton {display:none;}
+        footer {visibility: hidden;}
+        #stDecoration {display:none;}
+    </style>
+  """, 
+  unsafe_allow_html=True
+)
+
 st.title('Hỏi đáp về tài liệu')
 
 base.init_slidebar()

@@ -17,6 +17,20 @@ def generate_response(prompt):
     return response
 
 st.set_page_config(page_title="CMCTS", page_icon="img/favicon.ico", layout="wide")
+st.markdown(
+  """
+    <style>
+        .reportview-container {
+            margin-top: -2em;
+        }
+        #MainMenu {visibility: hidden;}
+        .stDeployButton {display:none;}
+        footer {visibility: hidden;}
+        #stDecoration {display:none;}
+    </style>
+  """, 
+  unsafe_allow_html=True
+)
 
 base.init_home_state(None)
 base.init_slidebar()
