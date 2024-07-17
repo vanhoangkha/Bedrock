@@ -13,8 +13,8 @@ knowledge_base_id=('GDPSQICWNW'),
 #modelId = "anthropic.claude-3-haiku-20240307-v1:0"
 modelId = "anthropic.claude-3-5-sonnet-20240620-v1:0"
 
-st.set_page_config(page_title="Tư vấn chứng khoán", page_icon="img/favicon.ico", layout="wide")
-st.title('Tư vấn chứng khoán')
+st.set_page_config(page_title="Tra cứu thông tin chứng khoán", page_icon="img/favicon.ico", layout="wide")
+st.title('Tra cứu thông tin chứng khoán')
 
 def count_tokens(text):
     return len(anthropic.get_tokenizer().encode(text))
