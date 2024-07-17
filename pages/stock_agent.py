@@ -1,17 +1,11 @@
-from langchain_community.retrievers import AmazonKnowledgeBasesRetriever
 import streamlit as st
-from streamlit_chat import message
 import boto3
 from langchain_aws import ChatBedrock
 
 import json
 from anthropic import Anthropic
-from langchain.prompts.chat import ChatPromptTemplate
-from langchain.llms.bedrock import Bedrock
-from langchain_community.chat_models import BedrockChat
 from datetime import date
 from datetime import datetime, timedelta
-from pandas_datareader import data as pdr
 import pandas as pd
 import os
 from vnstock3 import Vnstock
@@ -28,6 +22,7 @@ st.set_page_config(page_title="Trợ lý chứng khoán", page_icon="img/favicon
 st.title('Trợ lý chứng khoán')
 base.init_home_state("RoboStock - Your 24/7 AI financial companion")
 base.init_slidebar()
+base.init_dialog()
 base.init_animation()
 
 anthropic = Anthropic()
@@ -450,17 +445,7 @@ def generate_response(prompt,st_callback):
 # Containers
 response_container = st.container()
 container = st.container()
-# background
-page_bg_img = '''
-<style>
-.stApp  {
-background-image: url("https://img.freepik.com/premium-photo/generative-ai-composite-picture-data-analysis-interface_28914-25031.jpg");
-background-size: cover;
-}
-</style>
-'''
 
-#st.markdown(page_bg_img, unsafe_allow_html=True)
 with container:
     with st.form(key='my_form', clear_on_submit=True):
         user_input = st.text_area("You:", key='input', height=100)
