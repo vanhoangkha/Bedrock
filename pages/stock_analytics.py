@@ -376,7 +376,7 @@ else:
     st.plotly_chart(figBoll, use_container_width=True)
     
     # Forecast stock
-    st.title('Forecast')
+    st.title('Dự đoán theo chỉ số kỹ thuật')
     st.write("---")
     st.subheader('Dự đoán với chỉ số MACD')
     response = forecast_price(question="Dựa vào các chỉ số trên đưa ra phân tích giá chứng khoán trong thời gian tới,thời điểm, đưa ra giá mua vào và bán ra cổ phiếu cụ thể, giá cổ phiếu là VND", docs = df_macd)

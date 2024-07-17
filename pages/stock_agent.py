@@ -57,7 +57,7 @@ if 'total_cost' not in st.session_state:
 def count_tokens(text):
     return len(anthropic.get_tokenizer().encode(text))
 
-clear_button = st.sidebar.button("Clear Conversation", key="clear")
+clear_button = st.sidebar.button("Xoá lịch sử chat", key="clear")
 # Reset everything
 if clear_button:
     st.session_state['generated'] = []

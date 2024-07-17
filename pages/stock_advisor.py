@@ -33,7 +33,7 @@ def generate_response(prompt):
     
     retriever = AmazonKnowledgeBasesRetriever(
         knowledge_base_id = knowledge_base_id[0], 
-        top_k = 3,
+        top_k = 5,
         retrieval_config = {
             "vectorSearchConfiguration": {
                 "numberOfResults": 5, 
