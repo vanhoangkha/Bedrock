@@ -410,12 +410,13 @@ if st.session_state.messages[-1]["role"] != "assistant":
     st.session_state.show_animation = False
     if prompt:
         with st.chat_message(
-            "user",
+            "assistant",
             avatar="img/cmc.png",
         ) as chat:
             st_callback = StreamlitCallbackHandler(st)
             response, query = generate_response(prompt, st_callback)
+            print(query)
             # full_response = st.write_stream(query)
-            message = {"role": "assistant", "content": query}
+            message = {"role": "assistant", "content": "Question: " + query}
             st.session_state.messages.append(message)
      

@@ -13,7 +13,7 @@ Setup <a href='https://docs.aws.amazon.com/cli/latest/userguide/getting-started-
 > git clone https://github.com/nguyendinhthi0705/Study-Assistant.git <br />
 > cd Study-Assistant <br />
 > pip3 install -r requirements.txt <br />
-> streamlit run Home.py --server.port 8080 <br />
+> streamlit run main.py --server.port 8501 <br />
 
 # Architecture
 ![Architecture](./Architecture.png)
