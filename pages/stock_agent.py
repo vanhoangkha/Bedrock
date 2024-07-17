@@ -23,9 +23,10 @@ from langchain.callbacks import StreamlitCallbackHandler
 import base
 
 # Setting page title and header
-st.set_page_config(page_title="CMC Stock Agent", page_icon="img/favicon.ico", layout="wide")
-st.title('RoboStock - Your 24/7 AI assistant')
 
+st.set_page_config(page_title="CMC Stock Agent", page_icon="img/favicon.ico", layout="wide")
+st.title(' Trợ lý chứng khoán')
+base.init_home_state("RoboStock - Your 24/7 AI financial companion")
 base.init_slidebar()
 base.init_animation()
 

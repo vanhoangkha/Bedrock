@@ -97,46 +97,53 @@ if(infoType == 'PTCB'):
     # print(f"Sector: {info.get('sector')}")
     # print(f"Industry: {info.get('industry')}")
     # print(f"Website: {info.get('website')}")
+
+    # translate summary to Vietnamese
+    prompt = """Human: Summarize this content into no more than 100 words and translate into Vietnamese, return only vietnamese text:
+        Question: """ + str(info.get('longBusinessSummary', '')) + """
+        
+        \n\nAssistant: """
+    response = call_claude_sonet_stream(prompt)
     
     if info:
-        st.subheader('Company Profile')
+        st.subheader('Thông tin công ty')
         st.subheader(info.get('name', '')) 
-        st.markdown('** Sector **: ' + info.get('sector', ''))
-        st.markdown('** Industry **: ' + info.get('industry', ''))
-        st.markdown('** Phone **: ' + info.get('phone', ''))
-        st.markdown('** Address **: ' + info.get('address1', '') + ', ' + info.get('city', '') + ', ' + info.get('zip', '') + ', '  +  info.get('country', ''))
-        st.markdown('** Website **: ' + info.get('website', ''))
-        st.markdown('** Business Summary **')
-        st.info(info.get('longBusinessSummary', ''))
- 
+        st.markdown('**Lĩnh vực**: ' + info.get('sector', ''))
+        st.markdown('**Ngành**: ' + info.get('industry', ''))
+        st.markdown('**Liên hệ**: ' + info.get('phone', ''))
+        st.markdown('**Địa chỉ**: ' + info.get('address1', '') + ', ' + info.get('city', '') + ', ' + info.get('zip', '') + ', '  +  info.get('country', ''))
+        st.markdown('**Website**: ' + info.get('website', ''))
+        st.markdown('**Tóm tắt**')
+        #st.info(info.get('longBusinessSummary', ''))    
+        st.write_stream(response)
+
         fundInfo = {
-            'Enterprise Value (USD)': info.get('enterpriseValue', ''),
-            'Enterprise To Revenue Ratio': info.get('enterpriseToRevenue', ''),
-            'Enterprise To Ebitda Ratio': info.get('enterpriseToEbitda', ''),
-            'Net Income (USD)': info.get('netIncomeToCommon', ''),
-            'Profit Margin Ratio': info.get('profitMargins', ''),
-            'Forward PE Ratio': info.get('forwardPE', ''),
-            'PEG Ratio': info.get('pegRatio', ''),
-            'Price to Book Ratio': info.get('priceToBook', ''),
-            'Forward EPS (USD)': info.get('forwardEps', ''),
-            'Beta ': info.get('beta', ''),
-            'Book Value (USD)': info.get('bookValue', ''),
-            'Dividend Rate (%)': info.get('dividendRate', ''), 
-            'Dividend Yield (%)': info.get('dividendYield', ''),
-            'Five year Avg Dividend Yield (%)': info.get('fiveYearAvgDividendYield', ''),
-            'Payout Ratio': info.get('payoutRatio', '')
+            'Giá trị doanh nghiệp (USD)': info.get('enterpriseValue', ''),
+            'Tỷ lệ giá trị doanh nghiệp trên doanh thu': info.get('enterpriseToRevenue', ''),
+            'Tỷ lệ giá trị doanh nghiệp trên EBITDA': info.get('enterpriseToEbitda', ''),
+            'Thu nhập ròng (USD)': info.get('netIncomeToCommon', ''),
+            'Tỷ suất lợi nhuận': info.get('profitMargins', ''),
+            'Tỷ số P/E dự phóng': info.get('forwardPE', ''),
+            'Tỷ số PEG': info.get('pegRatio', ''),
+            'Tỷ số giá trên giá trị sổ sách': info.get('priceToBook', ''),
+            'EPS dự phóng (USD)': info.get('forwardEps', ''),
+            'Hệ số Beta': info.get('beta', ''),
+            'Giá trị sổ sách (USD)': info.get('bookValue', ''),
+            'Tỷ lệ cổ tức (%)': info.get('dividendRate', ''),
+            'Lợi suất cổ tức (%)': info.get('dividendYield', ''),
+            'Lợi suất cổ tức trung bình 5 năm (%)': info.get('fiveYearAvgDividendYield', ''),
+            'Tỷ lệ chi trả cổ tức': info.get('payoutRatio', '')
         }
         
         fundDF = pd.DataFrame.from_dict(fundInfo, orient='index')
         fundDF = fundDF.rename(columns={0: 'Value'})
-        st.subheader('Fundamental Info') 
+        st.subheader('Thông tin cơ bản')
         st.table(fundDF)
-        
-        st.subheader('General Stock Info') 
-        st.markdown('** Market **: ' + info.get('market', ''))
-        st.markdown('** Exchange **: ' + info.get('exchange', ''))
-        st.markdown('** Quote Type **: ' + info.get('quoteType', ''))
-        
+
+        st.subheader('Thông tin chung về cổ phiếu')
+        st.markdown('**Thị trường**: ' + info.get('market', ''))
+        st.markdown('**Sàn giao dịch**: ' + info.get('exchange', ''))
+        st.markdown('**Loại báo giá**: ' + info.get('quoteType', ''))        
         start = dt.datetime.today()-dt.timedelta(365)
         end = dt.datetime.today()
         df = yf.download(ticker,start,end)
@@ -147,7 +154,7 @@ if(infoType == 'PTCB'):
         
         fig.update_layout(
             title={
-                'text': "Stock Prices Over Past Two Years",
+                'text': "Giá trị cổ phiếu trong vòng 2 năm",
                 'y':0.9,
                 'x':0.5,
                 'xanchor': 'center',
@@ -155,18 +162,17 @@ if(infoType == 'PTCB'):
         st.plotly_chart(fig, use_container_width=True)
     
         marketInfo = {
-                "Volume": info.get('volume', ''),
-                "Average Volume": info.get('averageVolume', ''),
-                "Market Cap": info.get('marketCap', ''),
-                "Float Shares": info.get('floatShares', ''),
-                "Regular Market Price (USD)": info.get('regularMarketPrice', ''),
-                'Bid Size': info.get('bidSize', ''),
-                'Ask Size': info.get('askSize', ''),
-                "Share Short": info.get('sharesShort', ''),
-                'Short Ratio': info.get('shortRatio', ''),
-                'Share Outstanding': info.get('sharesOutstanding', '')
-            }
-        
+        "Khối lượng giao dịch": info.get('volume', ''),
+        "Khối lượng giao dịch trung bình": info.get('averageVolume', ''),
+        "Vốn hóa thị trường": info.get('marketCap', ''),
+        "Số cổ phiếu lưu hành tự do": info.get('floatShares', ''),
+        "Giá thị trường thông thường (USD)": info.get('regularMarketPrice', ''),
+        'Khối lượng đặt mua': info.get('bidSize', ''),
+        'Khối lượng đặt bán': info.get('askSize', ''),
+        "Số cổ phiếu bán khống": info.get('sharesShort', ''),
+        'Tỷ lệ bán khống': info.get('shortRatio', ''),
+        'Tổng số cổ phiếu đang lưu hành': info.get('sharesOutstanding', '')
+        }      
         marketDF = pd.DataFrame(data=marketInfo, index=[0])
         st.table(marketDF)
 else:

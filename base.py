@@ -237,6 +237,8 @@ def init_slidebar():
       )
 
 def init_animation():
+  if 'reset_trigger' not in st.session_state:
+    st.session_state.reset_trigger = False
   if st.session_state.reset_trigger:
       unique_key = "chat_input_" + str(hash("Snowflake Arctic is cool"))
       st.session_state.show_animation = False
@@ -244,6 +246,9 @@ def init_animation():
   if "has_snowed" not in st.session_state:
       st.snow()
       st.session_state["has_snowed"] = True
+
+  if 'show_animation' not in st.session_state:
+    st.session_state.show_animation = False
 
   if st.session_state.show_animation:
       components.html(particles_js, height=370, scrolling=False)
