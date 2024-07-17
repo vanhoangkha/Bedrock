@@ -1,4 +1,5 @@
-FROM python:3.10-slim AS base
+# First stage: Build environment
+FROM python:3.10-slim AS build
 
 WORKDIR /app
 
@@ -9,10 +10,7 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-
-FROM base AS dependencies
-
-COPY requirements.txt ./app
+COPY requirements.txt ./
 
 RUN python --version
 RUN pip --version
@@ -20,8 +18,17 @@ RUN pip install --upgrade pip
 RUN pip --version
 RUN pip install -r requirements.txt
 
-FROM dependencies AS deploy
+# Second stage: Final image
+FROM python:3.10-slim
 
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
+COPY --from=build /usr/local/bin/streamlit /usr/local/bin/streamlit
 COPY . /app
 
 EXPOSE 8501
