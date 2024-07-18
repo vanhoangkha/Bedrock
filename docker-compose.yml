@@ -14,11 +14,11 @@ services:
       - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "http://stock-assistant:8501/_stcore/health"]
-      interval: 1m30s
-      timeout: 10s
-      retries: 3
+    # healthcheck:
+    #   test: ["CMD", "curl", "--fail", "http://stock-assistant:8501/_stcore/health"]
+    #   interval: 1m30s
+    #   timeout: 10s
+    #   retries: 3
 
   nginx:
     container_name: cmc-nginx
