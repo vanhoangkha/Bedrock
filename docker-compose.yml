@@ -1,6 +1,7 @@
 name: cmc
 services:
   stock-assistant:
+    container_name: cmc-stock-assistant
     build: .
     ports:
       - "8501:8501"
@@ -20,6 +21,7 @@ services:
       retries: 3
 
   nginx:
+    container_name: cmc-nginx
     image: nginx:latest
     ports:
       - "80:80"
